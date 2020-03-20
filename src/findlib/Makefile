@@ -23,7 +23,8 @@ OCAMLLEX = ocamllex
 
 OBJECTS        = fl_ocaml_args.cmo findlib_config.cmo fl_split.cmo \
 	         fl_metatoken.cmo fl_meta.cmo \
-		 fl_metascanner.cmo fl_topo.cmo fl_package_base.cmo \
+		 fl_metascanner.cmo fl_barescanner.cmo \
+		 fl_topo.cmo fl_package_base.cmo \
 	         findlib.cmo fl_args.cmo fl_lint.cmo
 TOBJECTS       = topfind.cmo
 
@@ -48,11 +49,15 @@ opt: ocamlfind_opt$(EXEC_SUFFIX) findlib.cmxa findlib_top.cmxa topfind \
 num-top: num_top.cma
 
 ocamlfind$(EXEC_SUFFIX): findlib.cma $(OCAMLFIND_OBJECTS)
-	$(OCAMLC) $(CUSTOM) -o ocamlfind$(EXEC_SUFFIX) -g findlib.cma unix.cma \
+	$(OCAMLC) $(CUSTOM) -o ocamlfind$(EXEC_SUFFIX) -g -I +compiler-libs \
+		  ocamlcommon.cma ocamlbytecomp.cma ocamloptcomp.cma \
+		  findlib.cma unix.cma \
 	          $(OCAMLC_FLAGS) $(OCAMLFIND_OBJECTS)
 
 ocamlfind_opt$(EXEC_SUFFIX): findlib.cmxa $(OCAMLFIND_XOBJECTS)
-	$(OCAMLOPT) -o ocamlfind_opt$(EXEC_SUFFIX) findlib.cmxa unix.cmxa \
+	$(OCAMLOPT) -o ocamlfind_opt$(EXEC_SUFFIX) -I +compiler-libs \
+		  ocamlcommon.cmxa ocamlbytecomp.cmxa ocamloptcomp.cmxa \
+		  findlib.cmxa unix.cmxa \
 		  $(OCAMLOPT_FLAGS) $(OCAMLFIND_XOBJECTS)
 
 test_parser$(EXEC_SUFFIX): fl_metascanner.cmx test_parser.cmx fl_metatoken.cmx fl_meta.cmx
@@ -160,10 +165,10 @@ depend: *.ml *.mli fl_meta.ml fl_metascanner.ml findlib_config.ml topfind.ml
 	$(OCAMLOPT) $(OPAQUE) -thread -c -impl $<
 
 .ml.cmx:
-	$(OCAMLOPT) $(OPAQUE) -c $<
+	$(OCAMLOPT) $(OPAQUE) -I +compiler-libs -c $<
 
 .ml.cmo:
-	$(OCAMLC) $(OPAQUE) -g -c $<
+	$(OCAMLC) $(OPAQUE) -I +compiler-libs -g -c $<
 
 .mli.cmi:
 	$(OCAMLC) $(OPAQUE) -c $<

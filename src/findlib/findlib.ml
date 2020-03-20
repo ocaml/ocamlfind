@@ -365,9 +365,9 @@ let package_directory pkg =
 ;;
 
 
-let package_meta_file pkg =
+let package_path pkg =
   lazy_init();
-  (Fl_package_base.query pkg).Fl_package_base.package_meta
+  (Fl_package_base.query pkg).Fl_package_base.package_path
 ;;
 
 

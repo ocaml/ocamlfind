@@ -73,6 +73,10 @@ let out_path ?(prefix="") s =
     | _ ->
 	prefix ^ slashify s
 
+let out_ppath ?prefix =
+  function
+  | Fl_package_base.Pkg_with_META m -> out_path ?prefix m
+  | Fl_package_base.Pkg_bare d -> out_path ?prefix d
 
 
 let percent_subst ?base spec lookup s =
@@ -682,7 +686,7 @@ let expand predicates eff_packages format =
     (* format:
      * %p         package name
      * %d         package directory
-     * %m         META file
+     * %m         META file (or dir of bare package)
      * %D         description
      * %v         version
      * %a         archive file(s)
@@ -699,7 +703,7 @@ let expand predicates eff_packages format =
 	 let spec =
 	   [ "%p",  [pkg];
              "%d",  [out_path dir];
-             "%m",  [out_path (package_meta_file pkg)];
+             "%m",  [out_ppath (package_path pkg)];
 	     "%D",  [try package_property predicates pkg "description"
 		     with Not_found -> "[n/a]"];
 	     "%v",  [try package_property predicates pkg "version"
@@ -970,16 +974,23 @@ let ocamlc which () =
       | "ocamlopt"   -> Fl_ocaml_args.ocamlopt_spec
       | "ocamloptp"  -> Fl_ocaml_args.ocamloptp_spec
       | _            -> None in
+  let native_excludes =
+    [ "-require" ] in
   let native_spec =
     match native_spec_opt with
       | None -> failwith ("Not supported in your configuration: " ^ which)
-      | Some s -> s in
+      | Some s ->
+          List.filter
+            (fun (name,_,_) -> not (List.mem name native_excludes))
+            s in
 
   let arg_spec =
     List.flatten
       [ [
           "-package", add_pkg,
             "<name>   Refer to package when compiling";
+          "-require", add_pkg,
+            "<name>   Same as -package";
           "-linkpkg", Arg.Set linkpkg,
             "          Link the packages in";
           "-predicates", add_pred,
@@ -1392,6 +1403,10 @@ let ocamlc which () =
     i_options @        (* Generated -I options from package analysis *)
     pp_command @       (* Optional preprocessor command *)
     ppx_commands @     (* Optional ppx extension commands *)
+    (if !linkpkg && Findlib_config.ocaml_has_autoliblinking then
+       [ "-noautoliblink" ]
+     else
+       []) @
     (if !linkpkg then l_options else []) @  (* Generated -ccopt -L options *)
     (if !linkpkg then archives else []) @   (* Gen file names to link *)
     pass_files' @                           (* File names from cmd line *)
@@ -1434,15 +1449,21 @@ let ocamldoc() =
       | None -> failwith "Not supported in your configuration: ocamldoc"
       | Some s -> s in
 
+  let add_pkg s =
+    packages := !packages @ Fl_split.in_words s in
+
   parse_args
     ~align:false
     ( Arg.align
         [ "-package",
-	  Arg.String (fun s -> 
-		        packages := !packages @ Fl_split.in_words s),
+          Arg.String add_pkg,
 	  "<name>  Add this package to the search path";
           
-	  "-predicates",
+          "-require",
+          Arg.String add_pkg,
+            "<name>   Same as -package";
+
+          "-predicates",
 	  Arg.String (fun s ->
 		        predicates := !predicates @ Fl_split.in_words s),
 	  "<p>  Add predicate <p> when calculating dependencies";
@@ -1646,6 +1667,8 @@ let ocamldep () =
                 "<p>       Use preprocessor with predicate <p>";
 	"-package", add_pkg,
 	         "<p>      Add preprocessor package <p>";
+        "-require", add_pkg,
+            "<name>   Same as -package";
         "-predicates", add_pred,
                     "<p>  Add predicate <p> when calculating dependencies";
 	"-ppopt", add_pp_opt,
@@ -1763,7 +1786,9 @@ let ocamlbrowser () =
 	"-all", Arg.Set add_all,
 	     "              Add all packages to include path";
 	"-package", add_pkg,
-	         "<p>      Add package <p> to include path";
+           "<p>      Add package <p> to include path";
+        "-require", add_pkg,
+            "<name>       Same as -package";
 	"-passopt", Arg.String (fun s -> pass_options := !pass_options @ [s]),
                  "<opt>    Pass option <opt> directly to ocamlbrowser";
         "-passrest", Arg.Rest (fun s -> pass_options := !pass_options @ [s]),

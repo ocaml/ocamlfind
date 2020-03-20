@@ -149,7 +149,7 @@ val package_directory : string -> string
    * Raises [No_such_package] if the package cannot be found.
    *)
 
-val package_meta_file : string -> string
+val package_path : string -> Fl_package_base.package_path
   (** Get the absolute path of the META file of the given package *)
 
 val ignore_dups_in : unit -> string list

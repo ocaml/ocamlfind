@@ -8,10 +8,14 @@ open Fl_metascanner
 exception No_such_package of string * string
   (* (name, reason) *)
 
+type package_path =
+  | Pkg_with_META of string
+  | Pkg_bare of string
+
 type package =
     { package_name : string;
       package_dir : string;
-      package_meta : string;
+      package_path : package_path;
       package_defs : Fl_metascanner.pkg_definition list;
       package_priv : package_priv
     }
@@ -65,6 +69,12 @@ let init path stdlib ignore_dups_in =
   conf_ignore_dups_in := ignore_dups_in
 ;;
 
+let dir_of_type =
+  function
+  | Pkg_with_META f ->
+      Filename.dirname f
+  | Pkg_bare dir ->
+      dir
 
 let packages_in_meta_file ?(directory_required = false)
                           ~name:package_name ~dir:package_dir ~meta_file () =
@@ -122,7 +132,7 @@ let packages_in_meta_file ?(directory_required = false)
     let p =
       { package_name = p_name;
 	package_dir = d';
-        package_meta = meta_file;
+        package_path = Pkg_with_META meta_file;
 	package_defs = pkg_expr.pkg_defs;
 	package_priv = { missing_reqs = [] }
       } in
@@ -162,6 +172,20 @@ let packages_in_meta_file ?(directory_required = false)
 	raise any
 ;;
 
+let packages_in_bare_dir ~name:package_name ~dir:package_dir () =
+  let rec flatten_bare_pkg p =
+    p :: (List.map flatten_bare_pkg Fl_barescanner.(p.bare_children)
+          |> List.flatten) in
+  let as_package p =
+    { package_name = Fl_barescanner.(p.bare_name);
+      package_dir = Fl_barescanner.(p.bare_directory);
+      package_path = Pkg_bare Fl_barescanner.(p.bare_directory);
+      package_defs = Fl_barescanner.to_pkg_definition p;
+      package_priv = { missing_reqs = [] }
+    } in
+  Fl_barescanner.scan_bare_pkg package_name package_dir
+  |> flatten_bare_pkg
+  |> List.map as_package
 
 let query package_name =
 
@@ -169,19 +193,28 @@ let query package_name =
   if package_name_comps = [] then invalid_arg "Fl_package_base.query";
   let main_name = List.hd package_name_comps in
 
-  let process_file_and_lookup ?directory_required package_dir meta_file =
+  let lookup packages =
+    try
+      List.find
+        (fun p -> p.package_name = package_name)
+        packages
+    with
+        Not_found ->
+      raise (No_such_package (package_name, "")) in
+
+  let process_meta_file_and_lookup ?directory_required package_dir meta_file =
     let packages =
       packages_in_meta_file
 	?directory_required ~name:main_name ~dir:package_dir ~meta_file () in
-    let p =
-      ( try
-	  List.find
-	    (fun p -> p.package_name = package_name)
-	    packages
-	with
-	    Not_found ->
-	      raise (No_such_package (package_name, ""))
-      ) in
+    let p = lookup packages in
+    List.iter (Fl_metastore.add store) packages;
+    p
+  in
+
+  let process_bare_dir_and_lookup main_name package_dir =
+    let packages =
+      packages_in_bare_dir ~name:main_name ~dir:package_dir () in
+    let p = lookup packages in
     List.iter (Fl_metastore.add store) packages;
     p
   in
@@ -194,15 +227,18 @@ let query package_name =
 	let meta_file_1 = Filename.concat package_dir "META" in
 	let meta_file_2 = Filename.concat dir ("META." ^ main_name) in
 	if Sys.file_exists meta_file_1 then
-	  process_file_and_lookup package_dir meta_file_1
+          process_meta_file_and_lookup package_dir meta_file_1
 	else
 	  if Sys.file_exists meta_file_2 then
-	    process_file_and_lookup ~directory_required:true dir meta_file_2
+            process_meta_file_and_lookup ~directory_required:true dir meta_file_2
 	      (* Note: It is allowed to have relative "directory" directives.
 	       * The base directory is [dir] in this case.
 	       *)
-	  else
-	    run_ocamlpath path'
+          else
+            if Fl_barescanner.is_bare_pkg package_dir then
+              process_bare_dir_and_lookup main_name package_dir
+            else
+              run_ocamlpath path'
   in
 
   try
@@ -436,12 +472,16 @@ let package_definitions ~search_path package_name =
 	let meta_file_1 = Filename.concat package_dir "META" in
 	let meta_file_2 = Filename.concat dir ("META." ^ main_name) in
 	if Sys.file_exists meta_file_1 then
-	  meta_file_1 :: run_ocamlpath path'
+          Pkg_with_META meta_file_1 :: run_ocamlpath path'
 	else
-	  if Sys.file_exists meta_file_2 then
-	    meta_file_2 :: run_ocamlpath path'
-	  else
-	    run_ocamlpath path'
+          if Sys.file_exists meta_file_2 then
+            Pkg_with_META meta_file_2 :: run_ocamlpath path'
+          else
+            if Fl_barescanner.is_bare_pkg dir then
+              let bare = Fl_barescanner.scan_bare_pkg main_name dir in
+              Pkg_bare Fl_barescanner.(bare.bare_directory) :: run_ocamlpath path'
+            else
+              run_ocamlpath path'
   in
   run_ocamlpath search_path
 ;;
@@ -512,10 +552,11 @@ let package_conflict_report_1 identify_dir () =
 		   []
 		 | [_] ->
 		     ()
-		 | _ ->
+                 | _ ->
+                     let names = List.map dir_of_type c in
 		     Printf.eprintf "findlib: [WARNING] Package %s has multiple definitions in %s\n"
 		     pkg.package_name
-		     (String.concat ", " c)
+                     (String.concat ", " names)
 	     )
 	 | _ ->
 	     ()
@@ -551,7 +592,7 @@ let load_base ?prefix () =
 	  []
   in
 
-  let process_file ?directory_required main_name package_dir meta_file =
+  let process_meta_file ?directory_required main_name package_dir meta_file =
     try
       let _ = Fl_metastore.find store main_name in
       (* Note: If the main package is already loaded into the graph, we
@@ -561,16 +602,31 @@ let load_base ?prefix () =
     with
 	Not_found ->
 	  let packages =
-	  try
-	    packages_in_meta_file
-	      ?directory_required ~name:main_name ~dir:package_dir ~meta_file ()
-	  with
+            try
+              packages_in_meta_file
+                ?directory_required ~name:main_name ~dir:package_dir ~meta_file ()
+          with
 	      Failure s ->
 		prerr_endline ("findlib: [WARNING] " ^ s); []
 	  in
 	  List.iter (Fl_metastore.add store) packages;
-	    (* Nothing evil can happen! *)
-  in
+            (* Nothing evil can happen! *) in
+
+  let process_bare_dir main_name package_dir =
+    try
+      let _ = Fl_metastore.find store main_name in ()
+    with
+      | Not_found ->
+	  let packages =
+            try
+              packages_in_bare_dir ~name:main_name ~dir:package_dir ()
+          with
+	      Failure s ->
+		prerr_endline ("findlib: [WARNING] " ^ s); []
+	  in
+	  List.iter (Fl_metastore.add store) packages;
+            (* Nothing evil can happen! *) in
+
 
   let rec run_ocamlpath path =
     match path with
@@ -585,7 +641,7 @@ let load_base ?prefix () =
 	     let package_dir = Filename.concat dir f in
 	     let meta_file_1 = Filename.concat package_dir "META" in
 	     if Sys.file_exists meta_file_1 then
-	       process_file f package_dir meta_file_1
+               process_meta_file f package_dir meta_file_1
 	     else
 	       (* If f is META.pkgname: Add package pkgname *)
 	       (* We skip over filenames ending in '~' *)
@@ -593,8 +649,10 @@ let load_base ?prefix () =
 		  String.sub f (String.length f - 1) 1 <> "~" then begin
 		 let name = String.sub f 5 (String.length f - 5) in
 		 let meta_file_2 = Filename.concat dir f in
-		 process_file ~directory_required:true name dir meta_file_2
-	       end;
+                 process_meta_file ~directory_required:true name dir meta_file_2
+               end else
+                 if Fl_barescanner.is_bare_pkg package_dir then
+                   process_bare_dir f package_dir
 	  )
 	  files;
 	run_ocamlpath path'
