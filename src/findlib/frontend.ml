@@ -963,12 +963,12 @@ let ocamlc which () =
 
   let native_spec_opt =
     match which with
-      | "ocamlc"     -> Ocaml_args.ocamlc_spec
-      | "ocamlcp"    -> Ocaml_args.ocamlcp_spec
-      | "ocamlmklib" -> Ocaml_args.ocamlmklib_spec
-      | "ocamlmktop" -> Ocaml_args.ocamlmktop_spec
-      | "ocamlopt"   -> Ocaml_args.ocamlopt_spec
-      | "ocamloptp"  -> Ocaml_args.ocamloptp_spec
+      | "ocamlc"     -> Fl_ocaml_args.ocamlc_spec
+      | "ocamlcp"    -> Fl_ocaml_args.ocamlcp_spec
+      | "ocamlmklib" -> Fl_ocaml_args.ocamlmklib_spec
+      | "ocamlmktop" -> Fl_ocaml_args.ocamlmktop_spec
+      | "ocamlopt"   -> Fl_ocaml_args.ocamlopt_spec
+      | "ocamloptp"  -> Fl_ocaml_args.ocamloptp_spec
       | _            -> None in
   let native_spec =
     match native_spec_opt with
@@ -1430,7 +1430,7 @@ let ocamldoc() =
   let options = ref [] in
 
   let native_spec =
-    match Ocaml_args.ocamldoc_spec with
+    match Fl_ocaml_args.ocamldoc_spec with
       | None -> failwith "Not supported in your configuration: ocamldoc"
       | Some s -> s in
 
@@ -1636,7 +1636,7 @@ let ocamldep () =
     Arg.String (fun s -> packages := !packages @ (Fl_split.in_words s)) in
 
   let native_spec =
-    match Ocaml_args.ocamldep_spec with
+    match Fl_ocaml_args.ocamldep_spec with
       | None -> failwith "Not supported in your configuration: ocamldep"
       | Some s -> s in
 
@@ -2631,9 +2631,9 @@ let main() =
       prerr_endline "   or: ocamlfind ocamlcp      [-help | other options] <file> ...";
       prerr_endline "   or: ocamlfind ocamlmklib   [-help | other options] <file> ...";
       prerr_endline "   or: ocamlfind ocamlmktop   [-help | other options] <file> ...";
-      if Ocaml_args.ocamlopt_spec <> None then
+      if Fl_ocaml_args.ocamlopt_spec <> None then
 	prerr_endline "   or: ocamlfind ocamlopt     [-help | other options] <file> ...";
-      if Ocaml_args.ocamloptp_spec <> None then
+      if Fl_ocaml_args.ocamloptp_spec <> None then
 	prerr_endline "   or: ocamlfind ocamloptp    [-help | other options] <file> ...";
       prerr_endline "   or: ocamlfind ocamldep     [-help | other options] <file> ...";
       prerr_endline "   or: ocamlfind ocamlbrowser [-help | other options]";

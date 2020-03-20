@@ -21,7 +21,8 @@ OCAMLLEX = ocamllex
 #CAMLP4O =  camlp4 pa_o.cmo pa_op.cmo pr_dump.cmo --
 
 
-OBJECTS        = findlib_config.cmo fl_split.cmo fl_metatoken.cmo fl_meta.cmo \
+OBJECTS        = fl_ocaml_args.cmo findlib_config.cmo fl_split.cmo \
+	         fl_metatoken.cmo fl_meta.cmo \
 		 fl_metascanner.cmo fl_topo.cmo fl_package_base.cmo \
 	         findlib.cmo fl_args.cmo fl_lint.cmo
 TOBJECTS       = topfind.cmo
@@ -29,8 +30,8 @@ TOBJECTS       = topfind.cmo
 XOBJECTS       = $(OBJECTS:.cmo=.cmx)
 TXOBJECTS      = topfind.cmx
 
-OCAMLFIND_OBJECTS = ocaml_args.cmo frontend.cmo
-OCAMLFIND_XOBJECTS = ocaml_args.cmx frontend.cmx
+OCAMLFIND_OBJECTS = frontend.cmo
+OCAMLFIND_XOBJECTS = frontend.cmx
 
 NUMTOP_OBJECTS = num_top_printers.cmo num_top.cmo
 
