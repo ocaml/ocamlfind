@@ -23,11 +23,19 @@ type bare_definition =
 val is_bare_pkg : string -> bool
   (** whether the given directory is a bare package *)
 
+val scan_bare_files : string -> string -> (string -> in_channel option) -> bare_definition
+  (** [scan_bare_files name dir open_archive]: pre-fills the definition
+      from the archives. The archives (e.g. "lib.cma") are opened by
+      calling [open_archive]. If this function returns a channel,
+      the file is scanned. If it returns [None], the archive is assumed
+      to be non-existing.
+   *)
+
 val scan_bare_pkg : string -> string -> bare_definition
   (** [scan_bare_pkg name dir]: scans the given directory [dir] for
       bare archives. The name of this package is assumed as [name]
       (a dot-separated path). The subdirectories are recursively
-      scanned, too.
+      scanned, too (unless ignore_chdilren).
    *)
 
 val to_pkg_expr : bare_definition -> Fl_metascanner.pkg_expr

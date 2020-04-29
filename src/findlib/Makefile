@@ -24,7 +24,7 @@ OCAMLLEX = ocamllex
 OBJECTS        = fl_ocaml_args.cmo findlib_config.cmo fl_split.cmo \
 	         fl_metatoken.cmo fl_meta.cmo \
 		 fl_metascanner.cmo fl_barescanner.cmo \
-		 fl_topo.cmo fl_package_base.cmo \
+		 fl_topo.cmo fl_package_base.cmo fl_metachecker.cmo \
 	         findlib.cmo fl_args.cmo fl_lint.cmo
 TOBJECTS       = topfind.cmo
 

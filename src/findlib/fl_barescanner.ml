@@ -28,8 +28,7 @@ let is_bare_pkg dir =
     - missing native compiler: Cmx_format is unavailable
  *)
 
-let input_toc name exp_magic =
-  let ic = open_in_bin name in
+let input_toc name exp_magic ic =
   let magic = really_input_string ic (String.length exp_magic) in
   if magic <> exp_magic then (
     close_in ic;
@@ -41,43 +40,60 @@ let input_toc name exp_magic =
   close_in ic;
   toc
 
+let scan_bare_files mainname dir open_archive =
+  let name_cma = Filename.concat dir "lib.cma" in
+  let name_cmxa = Filename.concat dir "lib.cmxa" in
+  let chan_cma = open_archive "lib.cma" in
+  let chan_cmxa = open_archive "lib.cmxa" in
+  let req_cma =
+    match chan_cma with
+      | Some ic ->
+          Cmo_format.((input_toc name_cma Config.cma_magic_number ic).lib_requires)
+          |> List.map Lib.Name.to_string
+      | None ->
+          [] in
+  let req_cmxa =
+    match chan_cmxa with
+      | Some ic ->
+          Cmx_format.((input_toc name_cmxa Config.cma_magic_number ic).lib_requires)
+          |> List.map Lib.Name.to_string
+      | None ->
+          [] in
+  { bare_name = mainname;
+    bare_mainname = mainname;
+    bare_subname = "";
+    bare_directory = "";
+    bare_byte_archive = if chan_cma <> None then Some "lib.cma" else None;
+    bare_byte_requires = req_cma;
+    bare_native_archive = if chan_cmxa <> None then Some "lib.cmxa" else None;
+    bare_native_requires = req_cmxa;
+    bare_shared_archive = None;  (* TODO *)
+    bare_shared_requires = [];   (* TODO *)
+    bare_children = [];
+  }
+
 let scan_bare_pkg mainname dir =
   let sub_add subname n =
     if subname = "" then n else subname ^ "." ^ n in
+  let open_archive dir file_name =
+    let path = Filename.concat dir file_name in
+    if Sys.file_exists path then
+      Some(open_in_bin path)
+    else
+      None in
   let rec scan subname name dir =
-    let file_cma = Filename.concat dir "lib.cma" in
-    let file_cma_exists = Sys.file_exists file_cma in
-    let file_cmxa = Filename.concat dir "lib.cmxa" in
-    let file_cmxa_exists = Sys.file_exists file_cmxa in
-    let req_cma =
-      if file_cma_exists then (
-        Cmo_format.((input_toc file_cma Config.cma_magic_number).lib_requires)
-        |> List.map Lib.Name.to_string
-      ) else
-        [] in
-    let req_cmxa =
-      if file_cmxa_exists then (
-        Cmx_format.((input_toc file_cmxa Config.cma_magic_number).lib_requires)
-        |> List.map Lib.Name.to_string
-      ) else
-        [] in
-    let dir_files =
-      if Sys.is_directory dir then Sys.readdir dir else [| |] in
+    let bare = scan_bare_files name dir (open_archive dir) in
     let bare_children =
-      Array.to_list dir_files
+      (if Sys.is_directory dir then Sys.readdir dir else [| |])
+      |> Array.to_list
       |> List.filter (fun n -> is_bare_pkg (Filename.concat dir n))
       |> List.map (fun n ->
              scan (sub_add subname n) (name ^ "." ^ n) (Filename.concat dir n)) in
-    { bare_name = name;
+    { bare with
+      bare_name = name;
       bare_mainname = mainname;
       bare_subname = subname;
       bare_directory = dir;
-      bare_byte_archive = if file_cma_exists then Some "lib.cma" else None;
-      bare_byte_requires = req_cma;
-      bare_native_archive = if file_cmxa_exists then Some "lib.cmxa" else None;
-      bare_native_requires = req_cmxa;
-      bare_shared_archive = None;  (* TODO *)
-      bare_shared_requires = [];   (* TODO *)
       bare_children;
     } in
   scan "" mainname dir
