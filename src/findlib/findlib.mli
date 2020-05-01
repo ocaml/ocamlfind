@@ -105,7 +105,6 @@ val init_manually :
       ?ldconf: string ->
       ?config: string -> 
       install_dir: string ->
-      meta_dir: string ->
       search_path: string list ->
       unit ->
 	unit
@@ -121,11 +120,6 @@ val config_file : unit -> string
           
 val default_location : unit -> string
   (** Get the default installation directory for packages *)
-
-val meta_directory : unit -> string
-  (** Get the META installation directory for packages.
-   * Returns [""] if no such directory is configured.
-   *)
 
 val search_path : unit -> string list
   (** Get the search path for packages *)

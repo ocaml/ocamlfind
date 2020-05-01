@@ -643,16 +643,8 @@ let load_base ?prefix () =
 	     if Sys.file_exists meta_file_1 then
                process_meta_file f package_dir meta_file_1
 	     else
-	       (* If f is META.pkgname: Add package pkgname *)
-	       (* We skip over filenames ending in '~' *)
-	       if String.length f >= 6 && String.sub f 0 5 = "META." &&
-		  String.sub f (String.length f - 1) 1 <> "~" then begin
-		 let name = String.sub f 5 (String.length f - 5) in
-		 let meta_file_2 = Filename.concat dir f in
-                 process_meta_file ~directory_required:true name dir meta_file_2
-               end else
-                 if Fl_barescanner.is_bare_pkg package_dir then
-                   process_bare_dir f package_dir
+               if Fl_barescanner.is_bare_pkg package_dir then
+                 process_bare_dir f package_dir
 	  )
 	  files;
 	run_ocamlpath path'

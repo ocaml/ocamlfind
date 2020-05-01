@@ -21,7 +21,6 @@ let init_called = ref false ;;
 
 let conf_config_file = ref "";;
 let conf_default_location = ref "";;
-let conf_meta_directory = ref "";;
 let conf_search_path = ref [];;
 let conf_command = ref [];;
 let conf_stdlib = ref "";;
@@ -55,7 +54,6 @@ let init_manually
       ?(ldconf = Findlib_config.ocaml_ldconf)
       ?(config = Findlib_config.config_file)
       ~install_dir
-      ~meta_dir
       ~search_path () =
   conf_command := [ `ocamlc,     ocamlc_command;
 		    `ocamlopt,   ocamlopt_command;
@@ -70,7 +68,6 @@ let init_manually
   conf_config_file := config;
   conf_search_path := search_path;
   conf_default_location := install_dir;
-  conf_meta_directory := meta_dir;
   conf_stdlib := stdlib;
   conf_ldconf := ldconf;
   conf_ignore_dups_in :=
@@ -308,7 +305,6 @@ let init
     ~ldconf: ldconf
     ~config: config_file
     ~install_dir: destdir
-    ~meta_dir: metadir
     ~search_path: search_path
     ()
 ;;
@@ -327,12 +323,7 @@ let default_location() =
   !conf_default_location;;
 
 
-let meta_directory() =
-  lazy_init();
-  if !conf_meta_directory = "none" then "" else !conf_meta_directory;;
-
-
-let search_path() = 
+let search_path() =
   lazy_init();
   !conf_search_path;;
 

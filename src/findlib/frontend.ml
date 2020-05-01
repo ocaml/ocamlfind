@@ -2058,7 +2058,6 @@ let string_lowercase_ascii =
 
 let install_package () =
   let destdir = ref (default_location()) in
-  let metadir = ref (meta_directory()) in
   let ldconf  = ref (ocaml_ldconf()) in
   let don't_add_directory_directive = ref false in
   let pkgname = ref "" in
@@ -2069,16 +2068,11 @@ let install_package () =
   let add_files = ref false in
   let optional = ref false in
   let patches = ref [] in
-  let lean = ref false in
-  let lean_gen_meta = ref false in
 
   let keywords =
     [ "-destdir", (Arg.String (fun s -> destdir := s)),
               ("<path>    Set the destination directory (default: " ^
 	       !destdir ^ ")");
-      "-metadir", (Arg.String (fun s -> metadir := s)),
-              ("<path>    Install the META file into this directory (default: "^
-	       (if !metadir = "" then "none" else !metadir) ^ ")");
       "-ldconf", (Arg.String (fun s -> ldconf := s)),
              ("<path>     Update this ld.conf file (default: " ^ !ldconf ^ ")");
       "-dont-add-directory-directive", (Arg.Set don't_add_directory_directive),
@@ -2097,13 +2091,6 @@ let install_package () =
                    "<n>   Remove the subpackage <n>";
       "-patch-archives", Arg.Unit (fun () -> patches := !patches @ [`Archives]),
                       "   Remove non-existing archives";
-      "-lean", Arg.Set lean,
-            "             Install lean (new-style) package";
-      "-lean-gen-meta", Arg.Set lean_gen_meta,
-                     "    For -lean: generate a META file for backward compat";
-      "-legacy", Arg.Clear lean,
-              "           Install legacy package (this is the default)";
-
     ] in
   let errmsg = "usage: ocamlfind install [options] <package_name> <file> ..." in
 
@@ -2121,14 +2108,11 @@ let install_package () =
 	)
 	errmsg;
   if !pkgname = "" then (Arg.usage keywords errmsg; exit 1);
-  (* TODO: allow installation of subpackages! *)
   if not (Fl_split.is_valid_package_name !pkgname) then
     failwith "Package names must not contain the character '.'!";
 
   let pkgdir = Filename.concat !destdir !pkgname in
   let dlldir = Filename.concat !destdir Findlib_config.libexec_name in
-  let has_metadir = !metadir <> "" in
-  let meta_dot_pkg = "META." ^ !pkgname in
 
   (* The list of all files to install: *)
   let full_list  = !auto_files @ !dll_files @ !nodll_files in
@@ -2138,37 +2122,23 @@ let install_package () =
   let nodll_list = l2 @ !nodll_files in
   let have_libexec = Sys.file_exists dlldir in
   let pkgdir_list = if have_libexec then nodll_list else full_list in
-  let pkgdir_eff_list =
-    (* The files that will be placed into pkgdir: *)
-    List.map
-      (fun f ->
-	 if f = meta_dot_pkg then "META" else f)
-      (List.filter
-	 (fun f ->
-	    not has_metadir ||
-	      (f <> "META" && f <> meta_dot_pkg))
-	 pkgdir_list) in
-  
+
   (* Check whether META exists: (And check syntax) *)
   let meta_name =
     try
       List.find
 	(fun p ->
 	   let b = Filename.basename p in
-	   b = "META" || b = meta_dot_pkg)
+           b = "META")
 	nodll_list
     with
       | Not_found ->
 	  if !add_files then (
-	    let m1 = Filename.concat !metadir meta_dot_pkg in
-	    let m2 = Filename.concat pkgdir "META" in
-	    if Sys.file_exists m1 then
-	      m1
-	    else
-	      if Sys.file_exists m2 then
-		m2
-	      else
-		failwith "Cannot find META in package dir"
+            let m = Filename.concat pkgdir "META" in
+            if Sys.file_exists m then
+              m
+            else
+              failwith "Cannot find META in package dir"
 	  )
 	  else
 	    failwith "The META file is missing" in
@@ -2177,9 +2147,6 @@ let install_package () =
 
   if not !add_files then (
     (* Check for frequent reasons why installation can go wrong *)
-    if Sys.file_exists (Filename.concat !metadir meta_dot_pkg) then
-      failwith ("Package " ^ !pkgname ^ " is already installed\n - (file " ^ Filename.concat !metadir meta_dot_pkg ^ " already exists)");
-
     if Sys.file_exists (Filename.concat pkgdir "META") then
       failwith ("Package " ^ !pkgname ^ " is already installed\n - (file " ^ pkgdir ^ "/META already exists)");
   );
@@ -2188,7 +2155,7 @@ let install_package () =
        let f' = Filename.concat pkgdir f in
        if Sys.file_exists f' then
 	 failwith ("Conflict with file: " ^ f'))
-    pkgdir_eff_list;
+    pkgdir_list;
 
   if have_libexec then begin
     List.iter
@@ -2210,7 +2177,7 @@ let install_package () =
        try
 	 copy_file
 	   ~rename: (fun f ->
-			 if f = "META" || f = meta_dot_pkg then 
+                         if f = "META" then
 			   raise Skip_file
 			 else
 			   f)
@@ -2287,10 +2254,7 @@ let install_package () =
     )
   in
   if not !add_files then (
-    if has_metadir then
-      write_meta true !metadir meta_dot_pkg
-    else
-      write_meta false pkgdir "META";
+    write_meta false pkgdir "META";
   );
 
   (* Check if there is a postinstall script: *)
@@ -2305,7 +2269,6 @@ let reserved_names = [ Findlib_config.libexec_name; "postinstall"; "postremove" 
 let remove_package () =
   let destdir = ref (default_location()) in
   let destdir_set = ref false in
-  let metadir = ref (meta_directory()) in
   let ldconf  = ref (ocaml_ldconf()) in
   let pkgname = ref "" in
 
@@ -2313,9 +2276,6 @@ let remove_package () =
     [ "-destdir", (Arg.String (fun s -> destdir := s; destdir_set := true)),
               ("<path>      Set the destination directory (default: " ^
 	       !destdir ^ ")");
-      "-metadir", (Arg.String (fun s -> metadir := s)),
-              ("<path>      Remove the META file from this directory (default: " ^
-	       (if !metadir = "" then "none" else !metadir) ^ ")");
       "-ldconf", (Arg.String (fun s -> ldconf := s)),
              ("<path>       Update this ld.conf file (default: " ^ !ldconf ^ ")");
     ] in
@@ -2335,8 +2295,6 @@ let remove_package () =
   if not (Fl_split.is_valid_package_name !pkgname) then
     failwith "Package names must not contain the character '.'!";
 
-  let meta_dot_pkg = "META." ^ !pkgname in
-  let has_metadir = !metadir <> "" in
   let pkgdir = Filename.concat !destdir !pkgname in
   let dlldir = Filename.concat !destdir Findlib_config.libexec_name in
   let have_libexec = Sys.file_exists dlldir in
@@ -2367,30 +2325,17 @@ let remove_package () =
 
   (* If there is a metadir, remove the META file from it: *)
   let meta_removal_ok =
-    if has_metadir then (
-      let f = Filename.concat !metadir meta_dot_pkg in
-      try
-        Unix.unlink f;
-        prerr_endline ("Removed " ^ f);
-        true
-      with
-        | Unix.Unix_error(Unix.ENOENT,_,_) ->
-            prerr_endline ("ocamlfind: [WARNING] No such file: " ^ f);
-            false
-        | Unix.Unix_error(code, _, arg) ->
-            raise(sys_error code arg)
-    ) else
-      let f = Filename.concat pkgdir "META" in
-      try
-        Unix.unlink f;
-        prerr_endline ("Removed " ^ f);
-        true
-      with
-        | Unix.Unix_error(Unix.ENOENT,_,_) ->
-            prerr_endline ("ocamlfind: [WARNING] No such file: " ^ f);
-            false
-        | Unix.Unix_error(code, _, arg) ->
-            raise(sys_error code arg) in
+    let f = Filename.concat pkgdir "META" in
+    try
+      Unix.unlink f;
+      prerr_endline ("Removed " ^ f);
+      true
+    with
+      | Unix.Unix_error(Unix.ENOENT,_,_) ->
+          prerr_endline ("ocamlfind: [WARNING] No such file: " ^ f);
+          false
+      | Unix.Unix_error(code, _, arg) ->
+          raise(sys_error code arg) in
 
   if meta_removal_ok then (
 
@@ -2492,11 +2437,7 @@ let print_configuration() =
 	  (Findlib.search_path());
 	Printf.printf "Packages will be installed in/removed from:\n    %s\n"
 	  (dir (Findlib.default_location()));
-	Printf.printf "META files will be installed in/removed from:\n    %s\n"
-	  (let md = Findlib.meta_directory() in
-	   if md = "" then "the corresponding package directories" else dir md
-	  );
-	Printf.printf "The standard library is assumed to reside in:\n    %s\n"
+        Printf.printf "The standard library is assumed to reside in:\n    %s\n"
 	  (Findlib.ocaml_stdlib());
 	Printf.printf "The ld.conf file can be found here:\n    %s\n"
 	  (Findlib.ocaml_ldconf());
@@ -2507,13 +2448,10 @@ let print_configuration() =
 	List.iter print_endline (Findlib.search_path())
     | Some "destdir" ->
 	print_endline (Findlib.default_location())
-    | Some "metadir" ->
-	print_endline (Findlib.meta_directory())
     | Some "metapath" ->
-        let mdir = Findlib.meta_directory() in
         let ddir = Findlib.default_location() in
 	print_endline 
-          (if mdir <> "" then mdir ^ "/META.%s" else ddir ^ "/%s/META")
+          (ddir ^ "/%s/META")
     | Some "stdlib" ->
 	print_endline (Findlib.ocaml_stdlib())
     | Some "ldconf" ->
