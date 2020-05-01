@@ -11,4 +11,6 @@
      No longer m4
      Turn them into lean packages
  - Support ppx
+ - support Dune's virtual packages
+ - clean up the version of OCAMLPATH passed to the compiler
 
