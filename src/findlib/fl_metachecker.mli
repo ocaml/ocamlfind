@@ -4,6 +4,7 @@ type incompat_reasons =
   | Incompat_uses_directory
   | Incompat_uses_linkopts
   | Incompat_bad_archive of string * string
+  | Incompat_bad_plugin of string * string
   | Incompat_bad_requires of string
   | Incompat_inline_subpackage
 
