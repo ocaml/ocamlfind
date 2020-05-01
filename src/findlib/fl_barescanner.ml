@@ -98,6 +98,33 @@ let scan_bare_pkg mainname dir =
     } in
   scan "" mainname dir
 
+let check_bare_pkg bare =
+  let reqs =
+    [ if bare.bare_byte_archive <> None then
+        [ "lib.cma", bare.bare_byte_requires ]
+      else
+        [];
+      if bare.bare_native_archive <> None then
+        [ "lib.cmxa", bare.bare_native_requires ]
+      else
+        [];
+      if bare.bare_shared_archive <> None then
+        [ "lib.cmxs", bare.bare_shared_requires ]
+      else
+        [];
+    ] |> List.flatten in
+  if reqs = [] then
+    failwith "no archive to install (lib.cma, lib.cmxa, or lib.cmxs)"
+  else (
+    let ref_lib, ref_req = List.hd reqs in
+    List.iter
+      (fun (lib, req) ->
+        if req <> ref_req then
+          failwith ("The archives " ^ ref_lib ^ " and " ^ lib ^ " have different requirements")
+      )
+      reqs
+  )
+
 let to_pkg_definition bare =
   let pkg_defs_byte =
     match bare.bare_byte_archive with
@@ -151,10 +178,10 @@ let to_pkg_definition bare =
         def_preds = [];
         def_value = bare.bare_name
       };
-      { def_var = "directory";
+      { def_var = "lean";
         def_flav = `BaseDef;
         def_preds = [];
-        def_value = bare.bare_directory
+        def_value = "true";
       };
       { def_var = "requires";
         def_flav = `BaseDef;

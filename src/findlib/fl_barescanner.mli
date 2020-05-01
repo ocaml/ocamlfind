@@ -38,6 +38,9 @@ val scan_bare_pkg : string -> string -> bare_definition
       scanned, too (unless ignore_chdilren).
    *)
 
+val check_bare_pkg : bare_definition -> unit
+  (** Peforms some checks, and fails if the check are not succeeding. *)
+
 val to_pkg_expr : bare_definition -> Fl_metascanner.pkg_expr
   (** Converts the bare definition into an expression, as if a META
       file with the same information was present.

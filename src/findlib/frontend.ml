@@ -2055,6 +2055,17 @@ let char_lowercase_ascii c =
 let string_lowercase_ascii =
   String.map char_lowercase_ascii
 
+let dir_contains_pkg dir =
+  if Sys.file_exists(Filename.concat dir "META") then
+    Some "META"
+  else if Sys.file_exists(Filename.concat dir "lib.cma") then
+    Some "lib.cma"
+  else if Sys.file_exists(Filename.concat dir "lib.cmxa") then
+    Some "lib.cmxa"
+  else if Sys.file_exists(Filename.concat dir "lib.cmxs") then
+    Some "lib.cmxs"
+  else
+    None
 
 let install_package () =
   let destdir = ref (default_location()) in
@@ -2068,6 +2079,8 @@ let install_package () =
   let add_files = ref false in
   let optional = ref false in
   let patches = ref [] in
+  let lean = ref false in
+  let lean_gen_meta = ref false in
 
   let keywords =
     [ "-destdir", (Arg.String (fun s -> destdir := s)),
@@ -2091,6 +2104,12 @@ let install_package () =
                    "<n>   Remove the subpackage <n>";
       "-patch-archives", Arg.Unit (fun () -> patches := !patches @ [`Archives]),
                       "   Remove non-existing archives";
+      "-lean", Arg.Set lean,
+            "             Install lean (new-style) package";
+      "-lean-gen-meta", Arg.Set lean_gen_meta,
+                     "    For -lean: generate a META file for backward compat";
+      "-legacy", Arg.Clear lean,
+              "           Install legacy package (this is the default)";
     ] in
   let errmsg = "usage: ocamlfind install [options] <package_name> <file> ..." in
 
@@ -2108,10 +2127,20 @@ let install_package () =
 	)
 	errmsg;
   if !pkgname = "" then (Arg.usage keywords errmsg; exit 1);
-  if not (Fl_split.is_valid_package_name !pkgname) then
-    failwith "Package names must not contain the character '.'!";
 
-  let pkgdir = Filename.concat !destdir !pkgname in
+  if !lean then (
+    let n = Fl_split.package_name !pkgname in
+    if n = [] || List.mem "" n || List.mem "." n then
+      failwith("Bad package name");
+  ) else
+    if  not (Fl_split.is_valid_package_name !pkgname) then
+      failwith "Legacy package names must not contain the character '.'!";
+  if !lean_gen_meta && not !lean then
+    failwith "For -lean-gen-meta you also have to request -lean!";
+
+  let subpath =
+    Fl_split.package_name !pkgname |> String.concat "/" in
+  let pkgdir = Filename.concat !destdir subpath in
   let dlldir = Filename.concat !destdir Findlib_config.libexec_name in
 
   (* The list of all files to install: *)
@@ -2123,38 +2152,70 @@ let install_package () =
   let have_libexec = Sys.file_exists dlldir in
   let pkgdir_list = if have_libexec then nodll_list else full_list in
 
-  (* Check whether META exists: (And check syntax) *)
-  let meta_name =
+  let pkgdir_map = Hashtbl.create 7 in
+  List.iter
+    (fun f ->
+      Hashtbl.add pkgdir_map (Filename.basename f) f
+    )
+    pkgdir_list;
+  let pkgdir_open file =
     try
-      List.find
-	(fun p ->
-	   let b = Filename.basename p in
-           b = "META")
-	nodll_list
+      let path = Hashtbl.find pkgdir_map file in
+      Some(open_in_bin path)
+    with
+      | Not_found -> None in
+
+  if !lean_gen_meta && Hashtbl.mem pkgdir_map "META" then
+    failwith "Cannot generate META when a META file is already given";
+
+  (* For lean packages: archives must be called "lib" *)
+  if !lean then (
+    List.iter
+      (fun p ->
+        let f = Filename.basename p in
+        if Filename.check_suffix f ".cma" && f <> "lib.cma" then
+          failwith "For lean packages, bytecode archives must be called lib.cma";
+        if Filename.check_suffix f ".cmxa" && f <> "lib.cmxa" then
+          failwith "For lean packages, native archives must be called lib.cmxa";
+        if Filename.check_suffix f ".cmxs" && f <> "lib.cmxs" then
+          failwith "For lean packages, shared archives must be called lib.cmxs";
+      )
+      pkgdir_list
+  );
+
+  (* Check whether META exists: (And check syntax) *)
+  let meta_in_path_opt =
+    try
+      Some(Hashtbl.find pkgdir_map "META")
     with
       | Not_found ->
-	  if !add_files then (
-            let m = Filename.concat pkgdir "META" in
-            if Sys.file_exists m then
-              m
+          if !lean then
+            None
+          else
+            if !add_files then
+              None
             else
-              failwith "Cannot find META in package dir"
-	  )
-	  else
-	    failwith "The META file is missing" in
-
-  let meta_pkg = meta_pkg meta_name in
+              failwith "The META file is missing" in
+  let meta_in_expr_opt =
+    match meta_in_path_opt with
+      | None -> None
+      | Some m -> Some(meta_pkg m) in
 
   if not !add_files then (
     (* Check for frequent reasons why installation can go wrong *)
-    if Sys.file_exists (Filename.concat pkgdir "META") then
-      failwith ("Package " ^ !pkgname ^ " is already installed\n - (file " ^ pkgdir ^ "/META already exists)");
+    match dir_contains_pkg pkgdir with
+      | None -> ()
+      | Some f ->
+          failwith ("Package " ^ !pkgname ^ " is already installed\n - (file " ^ pkgdir ^ "/" ^ f ^  " already exists)");
   );
   List.iter
-    (fun f ->
-       let f' = Filename.concat pkgdir f in
-       if Sys.file_exists f' then
-	 failwith ("Conflict with file: " ^ f'))
+    (fun path ->
+      let file = Filename.basename path in
+      if !add_files && file = "META" then
+        failwith "Cannot add META to existing package";
+      let file' = Filename.concat pkgdir file in
+      if Sys.file_exists file' then
+        failwith ("Conflict with file: " ^ file'))
     pkgdir_list;
 
   if have_libexec then begin
@@ -2167,6 +2228,31 @@ let install_package () =
       )
       dll_list
   end;
+
+  (* For lean packages: check META or generate META *)
+  let meta_expr_opt =
+    if !lean then (
+      let bare =
+        Fl_barescanner.scan_bare_files !pkgname pkgdir pkgdir_open in
+      Fl_barescanner.check_bare_pkg bare;
+      if !lean_gen_meta then
+        Some (Fl_barescanner.to_pkg_expr bare)
+      else (
+        match meta_in_expr_opt with
+          | Some m ->
+              let toks =
+                Fl_metachecker.check_incompat_with_lean_meta
+                  !pkgname pkgdir_open m in
+              if toks <> [] then (
+                prerr_endline (Fl_metachecker.incompat_to_text toks);
+                failwith "Bad META file."
+              );
+              Some m
+          | None ->
+              None
+      )
+    ) else
+      meta_in_expr_opt in
 
   (* Create the package directory: *)
   install_create_directory !pkgname pkgdir;
@@ -2229,32 +2315,26 @@ let install_package () =
   end;
 
   (* Finally, write the META file: *)
-  let write_meta append_directory dir name =
-    (* If there are patches, write the patched META, else copy the file: *)
-    if !patches = [] then
-      copy_file 
-	~rename:(fun _ -> name)
-        ?append:(if append_directory then
-		   Some("\ndirectory=\"" ^ pkgdir ^ 
-			  "\" # auto-added by ocamlfind\n")
-		 else
-		   None)
-	meta_name
-	dir
-    else (
-      let p = Filename.concat dir name in
-      let patched_pkg = patch_pkg pkgdir meta_pkg !patches in
-      let out = open_out p in
-        Fl_metascanner.print out patched_pkg;
-      if append_directory then
-	output_string out ("\ndirectory=\"" ^ pkgdir ^ 
-			     "\" # auto-added by ocamlfind\n");
-      close_out out;
-      prerr_endline ("Installed " ^ p);
-    )
-  in
   if not !add_files then (
-    write_meta false pkgdir "META";
+    (* If there are patches, write the patched META, else copy the file: *)
+    if !patches = [] && not !lean_gen_meta then (
+      match meta_in_path_opt with
+        | None ->
+            ()
+        | Some meta ->
+            copy_file meta pkgdir
+    ) else (
+      match meta_expr_opt with
+        | None ->
+            ()
+        | Some pkg ->
+            let p = Filename.concat pkgdir "META" in
+            let patched_pkg = patch_pkg pkgdir pkg !patches in
+            let out = open_out p in
+            Fl_metascanner.print out patched_pkg;
+            close_out out;
+            prerr_endline ("Installed " ^ p);
+    )
   );
 
   (* Check if there is a postinstall script: *)
