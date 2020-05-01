@@ -2069,6 +2069,8 @@ let install_package () =
   let add_files = ref false in
   let optional = ref false in
   let patches = ref [] in
+  let lean = ref false in
+  let lean_gen_meta = ref false in
 
   let keywords =
     [ "-destdir", (Arg.String (fun s -> destdir := s)),
@@ -2095,6 +2097,13 @@ let install_package () =
                    "<n>   Remove the subpackage <n>";
       "-patch-archives", Arg.Unit (fun () -> patches := !patches @ [`Archives]),
                       "   Remove non-existing archives";
+      "-lean", Arg.Set lean,
+            "             Install lean (new-style) package";
+      "-lean-gen-meta", Arg.Set lean_gen_meta,
+                     "    For -lean: generate a META file for backward compat";
+      "-legacy", Arg.Clear lean,
+              "           Install legacy package (this is the default)";
+
     ] in
   let errmsg = "usage: ocamlfind install [options] <package_name> <file> ..." in
 
@@ -2112,6 +2121,7 @@ let install_package () =
 	)
 	errmsg;
   if !pkgname = "" then (Arg.usage keywords errmsg; exit 1);
+  (* TODO: allow installation of subpackages! *)
   if not (Fl_split.is_valid_package_name !pkgname) then
     failwith "Package names must not contain the character '.'!";
 

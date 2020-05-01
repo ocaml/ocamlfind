@@ -61,11 +61,6 @@ options:
 		because #use "topfind" will not work when this option
 		is enabled.)
 
-	-with-toolbox
-		also compile and install the "toolbox". This requires
-		that labltk is available. The toolbox contains the
-		"make_wizard" to easily create findlib-enabled Makefiles.
-
 	-cygpath
 		Cygwin environment only: If "ocamlc -where" does not
 		output a Unix-style path, this option can be used

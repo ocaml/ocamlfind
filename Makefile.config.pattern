@@ -50,10 +50,9 @@ EXEC_SUFFIX=
 LIB_SUFFIX=.a
 
 #----------------------------------------------------------------------
-# Which parts are to be built: findlib, findlib-toolbox (space-separated
-# list)
+# Which parts are to be built: findlib,  (space-separated list)
 #----------------------------------------------------------------------
-PARTS=findlib findlib-toolbox
+PARTS=findlib
 
 #----------------------------------------------------------------------
 # Whether the "topfind" script is installed in $(OCAML_CORE_STDLIB):

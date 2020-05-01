@@ -114,7 +114,6 @@ ocamlfind_bin=""
 ocamlfind_man=""
 ocaml_sitelib=""
 ocamlfind_config=""
-with_toolbox=0
 with_topfind=1
 with_camlp4=1
 custom=-custom
@@ -144,9 +143,6 @@ while [ "$#" != "0" ]; do
 	-system) system=$2
 	         shift 2
 		 ;;
-	-with-toolbox) with_toolbox=1
-	         shift
-		 ;;
 	-no-topfind) with_topfind=0
 	         shift
 		 ;;
@@ -164,7 +160,6 @@ while [ "$#" != "0" ]; do
                   echo "  -config path         set the location of the configuration file" 1>&2
                   echo "  -no-custom           don't link in custom runtime mode" 1>&2
 		  echo "  -system <systype>    override system type (esp. mingw and win32)" 1>&2
-		  echo "  -with-toolbox        also build the toolbox" 1>&2
 		  echo "  -no-topfind          don't install topfind script into stdlib directory" 1>&2
 		  echo "  -no-camlp4           don't install the camlp4 META file" 1>&2
 		  exit
@@ -448,9 +443,6 @@ if [ -f "${ocaml_core_stdlib}/labltk/labltk.cma" ]; then
 else
     llabltk=''
     echo "labltk: not present"
-    if [ $with_toolbox -gt 0 ]; then
-	echo "Sorry, toolbox requires labltk - omitting toolbox."
-    fi
     with_toolbox=0
 fi
 
@@ -631,9 +623,6 @@ fi
 # Write Makefile.config
 
 parts="findlib"
-if [ $with_toolbox -gt 0 ]; then
-    parts="$parts findlib-toolbox"
-fi
 if [ $cbytes -gt 0 ]; then
     parts="$parts bytes"
 fi
@@ -694,12 +683,6 @@ if [ $with_ppxopt -gt 0 ]; then
     echo "Topfind ppxopt support:    yes"
 else
     echo "Topfind ppxopt support:    no"
-fi
-
-if [ $with_toolbox -gt 0 ]; then
-    echo "Toolbox:                   yes"
-else
-    echo "Toolbox:                   no"
 fi
 
 if [ -z "$custom" ]; then
