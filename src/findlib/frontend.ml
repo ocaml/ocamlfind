@@ -687,6 +687,7 @@ let expand predicates eff_packages format =
      * %p         package name
      * %d         package directory
      * %m         META file (or dir of bare package)
+     * %T         package type (lean/legacy)
      * %D         description
      * %v         version
      * %a         archive file(s)
@@ -704,6 +705,11 @@ let expand predicates eff_packages format =
 	   [ "%p",  [pkg];
              "%d",  [out_path dir];
              "%m",  [out_ppath (package_path pkg)];
+             "%T",  [match package_type pkg with
+                       | Lean -> "lean"
+                       | Lean_with_META -> "lean_with_META"
+                       | Legacy -> "legacy"
+                    ];
 	     "%D",  [try package_property predicates pkg "description"
 		     with Not_found -> "[n/a]"];
 	     "%v",  [try package_property predicates pkg "version"
@@ -739,6 +745,7 @@ let help_format() =
     %m         META file
     %D         description
     %v         version
+    %T         package type (lean, lean_with_META, legacy)
     %a         archive file(s)
     %+a        archive file(s), converted to absolute paths
     %A         archive files as single string
@@ -757,7 +764,7 @@ let help_format() =
 let query_package () =
 
   let long_format =
-    "package:     %p\ndescription: %D\nversion:     %v\narchive(s):  %A\nlinkopts:    %O\nlocation:    %d\n" in
+    "package:     %p\ndescription: %D\nversion:     %v\ntype:        %T\narchive(s):  %A\nlinkopts:    %O\nlocation:    %d\n" in
   let i_format =
     "-I %d" in
   let l_format =
@@ -2723,16 +2730,18 @@ let main() =
 ;;
 
 
+let print_bt =
+  try ignore(Sys.getenv "OCAMLFIND_DEBUG"); true
+  with Not_found -> false;;
+
 try
   Sys.catch_break true;
+  if print_bt then Printexc.record_backtrace true;
   main()
 with
-  any ->
+    any ->
+    let bt = Printexc.get_backtrace() in
     prerr_endline ("Uncaught exception: " ^ Printexc.to_string any);
-    let raise_again =
-      try ignore(Sys.getenv "OCAMLFIND_DEBUG"); true
-      with Not_found -> false
-    in
-    if raise_again then raise any;
+    if print_bt then prerr_endline bt;
     exit 3
 ;;

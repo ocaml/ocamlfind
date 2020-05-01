@@ -16,6 +16,7 @@ type package =
     { package_name : string;
       package_dir : string;
       package_path : package_path;
+      package_lean : bool;
       package_defs : Fl_metascanner.pkg_definition list;
       package_priv : package_priv
     }
@@ -76,8 +77,7 @@ let dir_of_type =
   | Pkg_bare dir ->
       dir
 
-let packages_in_meta_file ?(directory_required = false)
-                          ~name:package_name ~dir:package_dir ~meta_file () =
+let packages_in_meta_file ~name:package_name ~dir:package_dir ~meta_file () =
   (* Parses the META file whose name is [meta_file]. In [package_name], the
    * name of the main package must be passed. [package_dir] is the
    * directory associated with the package by default (i.e. before
@@ -101,10 +101,7 @@ let packages_in_meta_file ?(directory_required = false)
 	lookup "directory" [] pkg_expr.pkg_defs
       with
 	  Not_found ->
-	    if pkg_name_prefix="" && directory_required then
-	      failwith ("The `directory' directive is required in this META definition");
-
-	    ""
+            ""
     in
     let d' =
       if d = "" then
@@ -128,11 +125,15 @@ let packages_in_meta_file ?(directory_required = false)
       if pkg_name_prefix = "" then
 	pkg_name_component
       else
-	pkg_name_prefix ^ "." ^ pkg_name_component in
+        pkg_name_prefix ^ "." ^ pkg_name_component in
+    let package_lean =
+      try lookup "lean" [] pkg_expr.pkg_defs = "true"
+      with Not_found -> false in
     let p =
       { package_name = p_name;
 	package_dir = d';
         package_path = Pkg_with_META meta_file;
+        package_lean;
 	package_defs = pkg_expr.pkg_defs;
 	package_priv = { missing_reqs = [] }
       } in
@@ -180,6 +181,7 @@ let packages_in_bare_dir ~name:package_name ~dir:package_dir () =
     { package_name = Fl_barescanner.(p.bare_name);
       package_dir = Fl_barescanner.(p.bare_directory);
       package_path = Pkg_bare Fl_barescanner.(p.bare_directory);
+      package_lean = true;
       package_defs = Fl_barescanner.to_pkg_definition p;
       package_priv = { missing_reqs = [] }
     } in
@@ -202,10 +204,10 @@ let query package_name =
         Not_found ->
       raise (No_such_package (package_name, "")) in
 
-  let process_meta_file_and_lookup ?directory_required package_dir meta_file =
+  let process_meta_file_and_lookup package_dir meta_file =
     let packages =
       packages_in_meta_file
-	?directory_required ~name:main_name ~dir:package_dir ~meta_file () in
+        ~name:main_name ~dir:package_dir ~meta_file () in
     let p = lookup packages in
     List.iter (Fl_metastore.add store) packages;
     p
@@ -224,21 +226,14 @@ let query package_name =
       [] -> raise(No_such_package(package_name, ""))
     | dir :: path' ->
 	let package_dir = Filename.concat dir main_name in
-	let meta_file_1 = Filename.concat package_dir "META" in
-	let meta_file_2 = Filename.concat dir ("META." ^ main_name) in
-	if Sys.file_exists meta_file_1 then
-          process_meta_file_and_lookup package_dir meta_file_1
-	else
-	  if Sys.file_exists meta_file_2 then
-            process_meta_file_and_lookup ~directory_required:true dir meta_file_2
-	      (* Note: It is allowed to have relative "directory" directives.
-	       * The base directory is [dir] in this case.
-	       *)
+        let meta_file = Filename.concat package_dir "META" in
+        if Sys.file_exists meta_file then
+          process_meta_file_and_lookup package_dir meta_file
+        else
+          if Fl_barescanner.is_bare_pkg package_dir then
+            process_bare_dir_and_lookup main_name package_dir
           else
-            if Fl_barescanner.is_bare_pkg package_dir then
-              process_bare_dir_and_lookup main_name package_dir
-            else
-              run_ocamlpath path'
+            run_ocamlpath path'
   in
 
   try
@@ -592,7 +587,7 @@ let load_base ?prefix () =
 	  []
   in
 
-  let process_meta_file ?directory_required main_name package_dir meta_file =
+  let process_meta_file main_name package_dir meta_file =
     try
       let _ = Fl_metastore.find store main_name in
       (* Note: If the main package is already loaded into the graph, we
@@ -604,7 +599,7 @@ let load_base ?prefix () =
 	  let packages =
             try
               packages_in_meta_file
-                ?directory_required ~name:main_name ~dir:package_dir ~meta_file ()
+                ~name:main_name ~dir:package_dir ~meta_file ()
           with
 	      Failure s ->
 		prerr_endline ("findlib: [WARNING] " ^ s); []

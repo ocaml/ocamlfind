@@ -387,6 +387,21 @@ let package_deep_ancestors predlist pkglist =
   Fl_package_base.requires_deeply predlist pkglist
 ;;
 
+type package_type =
+  | Lean
+  | Lean_with_META
+  | Legacy
+
+let package_type pkg =
+  let open Fl_package_base in
+  lazy_init();
+  let l = query pkg in
+  if l.package_lean then
+    match l.package_path with
+      | Pkg_with_META _ -> Lean_with_META
+      | Pkg_bare _ -> Lean
+  else
+    Legacy
 
 let resolve_path ?base ?(explicit=false) p =
   lazy_init();

@@ -19,6 +19,8 @@ type package =
         (** The directory where to lookup package files *)
       package_path : package_path;
         (** The path to the META file *)
+      package_lean : bool;
+        (** Whether this is a lean (new-style) package *)
       package_defs : Fl_metascanner.pkg_definition list;
         (** The definitions in the META file *)
       package_priv : package_priv;
@@ -160,7 +162,6 @@ val package_users : preds:string list -> string list -> string list
  *)
 
 val packages_in_meta_file : 
-      ?directory_required:bool ->
       name:string -> dir:string -> meta_file:string -> unit -> package list
   (** Parses the META file whose name is [meta_file]. In [name], the
    * name of the main package must be passed. [dir] is the
@@ -169,10 +170,6 @@ val packages_in_meta_file :
    *
    * Returns the package records found in this file. The "directory"
    * directive is already applied.
-   *
-   * @param directory_required If true, it is checked whether there is a
-   * "directory" directive in the main package. If this directive is missing,
-   * the function will fail.
    *)
 
 val packages_in_bare_dir :

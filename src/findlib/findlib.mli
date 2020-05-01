@@ -204,6 +204,18 @@ val package_deep_ancestors : string list -> string list -> string list
    * cyclic dependency.
    *)
 
+type package_type =
+  | Lean
+  | Lean_with_META
+  | Legacy
+
+val package_type : string -> package_type
+  (** Returns the package type:
+       - [Lean]: a new-style package without META file
+       - [Lean_with_META]: a lean package with META for compatibility
+       - [Legacy]: old-style package
+   *)
+
 val resolve_path : ?base:string -> ?explicit:bool -> string -> string
   (** Resolves findlib notation in filename paths. The notation 
    * [ +name/path ] can be used to refer to the subdirectory [name]
