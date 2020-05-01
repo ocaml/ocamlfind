@@ -1991,24 +1991,28 @@ let rec patch_archives pkgdir pkg =
 
 
 let rec patch_pkg pkgdir pkg patches =
+  let patch_var name value =
+    let def =
+      { Fl_metascanner.def_var = name;
+        def_flav = `BaseDef;
+        def_preds = [];
+        def_value = value
+      } in
+    let defs =
+      List.filter
+        (fun d -> d.Fl_metascanner.def_var <> name)
+        pkg.Fl_metascanner.pkg_defs in
+    { pkg with
+      Fl_metascanner.pkg_defs = def :: defs
+    } in
   match patches with
     | [] -> pkg
     | (`Version v) :: patches' ->
-	let def =
-	  { Fl_metascanner.def_var = "version";
-	    def_flav = `BaseDef;
-	    def_preds = [];
-	    def_value = v 
-	  } in
-	let defs =
-	  List.filter
-	    (fun d -> d.Fl_metascanner.def_var <> "version")
-	    pkg.Fl_metascanner.pkg_defs in
-	let pkg' =
-	  { pkg with
-	      Fl_metascanner.pkg_defs = def :: defs
-	  } in
-	patch_pkg pkgdir pkg' patches'
+        let pkg' = patch_var "version" v in
+        patch_pkg pkgdir pkg' patches'
+    | (`Description v) :: patches' ->
+        let pkg' = patch_var "description" v in
+        patch_pkg pkgdir pkg' patches'
     | (`Rmpkg n) :: patches' ->
 	let children =
 	  List.filter
@@ -2100,6 +2104,8 @@ let install_package () =
                 "         The following files are optional";
       "-patch-version", Arg.String (fun s -> patches := !patches @ [`Version s]),
                      "<v> Set the package version to <v>";
+      "-patch-description", Arg.String (fun s -> patches := !patches @ [`Description s]),
+                         "<d> Set the package description to <d>";
       "-patch-rmpkg", Arg.String (fun s -> patches := !patches @ [`Rmpkg s]),
                    "<n>   Remove the subpackage <n>";
       "-patch-archives", Arg.Unit (fun () -> patches := !patches @ [`Archives]),
