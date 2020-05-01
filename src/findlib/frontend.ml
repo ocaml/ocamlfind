@@ -2168,19 +2168,15 @@ let install_package () =
   if !lean_gen_meta && Hashtbl.mem pkgdir_map "META" then
     failwith "Cannot generate META when a META file is already given";
 
-  (* For lean packages: archives must be called "lib" *)
+  (* For lean packages: at least one archive must be called "lib" *)
   if !lean then (
-    List.iter
-      (fun p ->
-        let f = Filename.basename p in
-        if Filename.check_suffix f ".cma" && f <> "lib.cma" then
-          failwith "For lean packages, bytecode archives must be called lib.cma";
-        if Filename.check_suffix f ".cmxa" && f <> "lib.cmxa" then
-          failwith "For lean packages, native archives must be called lib.cmxa";
-        if Filename.check_suffix f ".cmxs" && f <> "lib.cmxs" then
-          failwith "For lean packages, shared archives must be called lib.cmxs";
-      )
-      pkgdir_list
+    if not (List.exists
+              (fun p ->
+                let f = Filename.basename p in
+                f = "lib.cma" || f = "lib.cmxa" || f = "lib.cmxs"
+              )
+              pkgdir_list) then
+      failwith "For lean packages, archives must be named lib.(cma,cmxa,cmxs), and there must be at least one such archive to install"
   );
 
   (* Check whether META exists: (And check syntax) *)
