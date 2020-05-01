@@ -30,6 +30,8 @@ type formal_pred =
     ]
   (** A formal predicate as it occurs in a package definition *)
 
+type level = Ignore | Warn | Err
+
 val init : 
       ?env_ocamlpath: string ->
       ?env_ocamlfind_destdir: string ->
@@ -37,6 +39,7 @@ val init :
       ?env_ocamlfind_commands: string ->
       ?env_ocamlfind_ignore_dups_in: string ->
       ?env_ocamlfind_ignore_dups_in_list: string list ->
+      ?env_ocamlfind_inconsistent_lean_libs: level ->
       ?env_camllib: string ->
       ?env_ldconf: string ->
       ?config: string -> 
@@ -101,6 +104,7 @@ val init_manually :
       ?ocamldoc_command: string ->     (* default: "ocamldoc"   *)
       ?ignore_dups_in:string ->        (* default: None *)
       ?ignore_dups_in_list:string list ->  (* default: [] *)
+      ?inconsistent_lean_libs:level -> (* default: Warn *)
       ?stdlib: string ->               (* default: taken from Findlib_config *)
       ?ldconf: string ->
       ?config: string -> 
@@ -135,6 +139,9 @@ val ocaml_stdlib : unit -> string
 
 val ocaml_ldconf : unit -> string
   (** Get the file name of [ld.conf] *)
+
+val inconsistent_lean_libs : unit -> level
+  (** How to deal with inconsistent lean libraries *)
 
 val package_directory : string -> string
   (** Get the absolute path of the directory where the given package is

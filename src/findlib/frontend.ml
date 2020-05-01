@@ -4,6 +4,7 @@
  *)
 
 open Findlib;;
+open Printf
 
 exception Usage;;
 exception Silent_error;;
@@ -2258,10 +2259,63 @@ let install_package () =
               );
               Some m
           | None ->
-              None
+              Some (Fl_barescanner.to_pkg_expr bare)
       )
     ) else
       meta_in_expr_opt in
+
+  (* For lean packages: check list of requirements *)
+  let inconsistent_lean_libs =
+    Findlib.inconsistent_lean_libs() in
+  if !lean && inconsistent_lean_libs <> Findlib.Ignore then (
+    match meta_expr_opt with
+      | None ->
+          assert false
+      | Some m ->
+          let problem = ref false in
+          let reqs =
+            try Fl_metascanner.lookup "requires" [] m.Fl_metascanner.pkg_defs |> Fl_split.in_words
+            with Not_found -> [] in
+          List.iter
+            (fun pkg ->
+              try
+                match Findlib.package_type pkg with
+                  | Lean | Lean_with_META -> ()
+                  | Legacy ->
+                      problem := true;
+                      let msg =
+                        sprintf "Required package '%s' is a legacy package" pkg in
+                      ( match inconsistent_lean_libs with
+                          | Findlib.Ignore ->
+                              ()
+                          | Findlib.Warn ->
+                              eprintf "[WARNING] %s\n" msg
+                          | Findlib.Err ->
+                              eprintf "[ERROR] %s\n" msg
+                      )
+              with
+                | Findlib.No_such_package _ ->
+                    (* ignore this for now *)
+                    ()
+            )
+            reqs;
+          if !problem then (
+            eprintf "**********************************************************************\n";
+            eprintf "* This lean package uses installed packages that are not lean.       *\n";
+            eprintf "* Because of this you will not be able to use this package           *\n";
+            eprintf "* with only the basic lookup feature built into the compiler.        *\n";
+            ( match inconsistent_lean_libs with
+              | Ignore -> ()
+              | Warn ->
+                  eprintf "* This situation is tolerated, but the packages should be fixed.     *\n"
+              | Err ->
+                  eprintf "* This is no longer accepted. Go and fix the packages.               *\n"
+            );
+            eprintf "**********************************************************************\n";
+            if inconsistent_lean_libs = Err then
+              failwith "Bad package"
+          )
+  );
 
   (* Create the package directory: *)
   install_create_directory !pkgname pkgdir;
