@@ -109,6 +109,14 @@ configuration files, and library routines in detail.</p>
     <title>List of Changes</title>
     <ul>
 
+      <li>
+        <p><em>2.0+DEV:</em> Adapted to automatic library linking, as
+        available in ocaml-XXX. Now, using META files is optional if
+        certain conventions are followed. This implies the following
+        list of detailed changes:</p>
+        <p>Replaced Findlib.package_meta by Findlib.package_path.</p>
+      </li>
+
     <li>
       <p><em>1.8.1:</em> Adapted to upcoming ocaml-4.09.</p>
       <p>New API Findlib.list_packages' can specify a package prefix.</p>

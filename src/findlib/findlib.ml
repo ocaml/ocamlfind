@@ -17,16 +17,18 @@ type formal_pred =
     | `NegPred of string
     ]
 
+type level = Ignore | Warn | Err
+
 let init_called = ref false ;;
 
 let conf_config_file = ref "";;
 let conf_default_location = ref "";;
-let conf_meta_directory = ref "";;
 let conf_search_path = ref [];;
 let conf_command = ref [];;
 let conf_stdlib = ref "";;
 let conf_ldconf = ref "";;
 let conf_ignore_dups_in = ref ([] : string list);;
+let conf_inconsistent_lean_libs = ref Warn;;
 
 let ocamlc_default = "ocamlc";;
 let ocamlopt_default = "ocamlopt";;
@@ -51,11 +53,11 @@ let init_manually
       ?(ocamldoc_command = ocamldoc_default)
       ?ignore_dups_in
       ?(ignore_dups_in_list = [])
+      ?(inconsistent_lean_libs = Warn)
       ?(stdlib = Findlib_config.ocaml_stdlib)
       ?(ldconf = Findlib_config.ocaml_ldconf)
       ?(config = Findlib_config.config_file)
       ~install_dir
-      ~meta_dir
       ~search_path () =
   conf_command := [ `ocamlc,     ocamlc_command;
 		    `ocamlopt,   ocamlopt_command;
@@ -70,7 +72,6 @@ let init_manually
   conf_config_file := config;
   conf_search_path := search_path;
   conf_default_location := install_dir;
-  conf_meta_directory := meta_dir;
   conf_stdlib := stdlib;
   conf_ldconf := ldconf;
   conf_ignore_dups_in :=
@@ -78,9 +79,17 @@ let init_manually
         | None -> []
         | Some d -> [d]
     ) @ ignore_dups_in_list;
+  conf_inconsistent_lean_libs := inconsistent_lean_libs;
   Fl_package_base.init !conf_search_path stdlib !conf_ignore_dups_in;
   init_called := true
 ;;
+
+let parse_level =
+  function
+  | "warn" | "warning" -> Warn
+  | "err" | "error" -> Err
+  | "ignore" -> Ignore
+  | s -> failwith ("bad value for inconsistent_lean_libs: " ^ s)
 
 
 let command_names cmd_spec =
@@ -115,7 +124,9 @@ let auto_config_file() =
 let init
       ?env_ocamlpath ?env_ocamlfind_destdir ?env_ocamlfind_metadir
       ?env_ocamlfind_commands ?env_ocamlfind_ignore_dups_in
-      ?env_ocamlfind_ignore_dups_in_list ?env_camllib ?env_ldconf
+      ?env_ocamlfind_ignore_dups_in_list
+      ?env_ocamlfind_inconsistent_lean_libs
+      ?env_camllib ?env_ldconf
       ?config ?toolchain () =
   
   let config_file =
@@ -157,7 +168,8 @@ let init
 
   let sys_ocamlc, sys_ocamlopt, sys_ocamlcp, sys_ocamloptp, sys_ocamlmklib,
       sys_ocamlmktop, sys_ocamldep, sys_ocamlbrowser, sys_ocamldoc,
-      sys_search_path, sys_destdir, sys_metadir, sys_stdlib, sys_ldconf = 
+      sys_search_path, sys_destdir, sys_metadir, sys_stdlib, sys_ldconf,
+      sys_inconsistent_lean_libs =
     (
       let config_vars =
         if config_file <> "" &&
@@ -202,7 +214,8 @@ let init
 	    (lookup "destdir" ""),
 	    (lookup "metadir" "none"),
 	    (lookup "stdlib" Findlib_config.ocaml_stdlib),
-	    (lookup "ldconf" Findlib_config.ocaml_ldconf)
+            (lookup "ldconf" Findlib_config.ocaml_ldconf),
+            (lookup "inconsistent_lean_libs" "warn" |> parse_level);
 	  ) in
         if not !found && config_preds <> [] then
           prerr_endline("ocamlfind: [WARNING] Undefined toolchain: " ^ 
@@ -218,7 +231,8 @@ let init
 	  "",
           "none",
 	  Findlib_config.ocaml_stdlib,
-	  Findlib_config.ocaml_ldconf
+          Findlib_config.ocaml_ldconf,
+          Warn
 	)
     )
   in
@@ -274,6 +288,13 @@ let init
           try Fl_split.path (Sys.getenv "OCAMLFIND_IGNORE_DUPS_IN")
           with Not_found -> [] in
 
+  let inconsistent_lean_libs =
+    match env_ocamlfind_inconsistent_lean_libs with
+      | Some x -> x
+      | None ->
+          try Sys.getenv "OCAMLFIND_INCONSISTENT_LEAN_LIBS" |> parse_level
+          with Not_found -> sys_inconsistent_lean_libs in
+
   let ocamlc, ocamlopt, ocamlcp, ocamloptp, ocamlmklib, ocamlmktop,
       ocamldep, ocamlbrowser, ocamldoc,
       search_path, destdir, metadir, stdlib, ldconf =
@@ -308,8 +329,8 @@ let init
     ~ldconf: ldconf
     ~config: config_file
     ~install_dir: destdir
-    ~meta_dir: metadir
     ~search_path: search_path
+    ~inconsistent_lean_libs
     ()
 ;;
 
@@ -327,12 +348,7 @@ let default_location() =
   !conf_default_location;;
 
 
-let meta_directory() =
-  lazy_init();
-  if !conf_meta_directory = "none" then "" else !conf_meta_directory;;
-
-
-let search_path() = 
+let search_path() =
   lazy_init();
   !conf_search_path;;
 
@@ -359,15 +375,19 @@ let ignore_dups_in() =
   lazy_init();
   !conf_ignore_dups_in;;
 
+let inconsistent_lean_libs() =
+  lazy_init();
+  !conf_inconsistent_lean_libs;;
+
 let package_directory pkg =
   lazy_init();
   (Fl_package_base.query pkg).Fl_package_base.package_dir
 ;;
 
 
-let package_meta_file pkg =
+let package_path pkg =
   lazy_init();
-  (Fl_package_base.query pkg).Fl_package_base.package_meta
+  (Fl_package_base.query pkg).Fl_package_base.package_path
 ;;
 
 
@@ -396,6 +416,21 @@ let package_deep_ancestors predlist pkglist =
   Fl_package_base.requires_deeply predlist pkglist
 ;;
 
+type package_type =
+  | Lean
+  | Lean_with_META
+  | Legacy
+
+let package_type pkg =
+  let open Fl_package_base in
+  lazy_init();
+  let l = query pkg in
+  if l.package_lean then
+    match l.package_path with
+      | Pkg_with_META _ -> Lean_with_META
+      | Pkg_bare _ -> Lean
+  else
+    Legacy
 
 let resolve_path ?base ?(explicit=false) p =
   lazy_init();

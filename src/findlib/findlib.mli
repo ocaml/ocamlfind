@@ -30,6 +30,8 @@ type formal_pred =
     ]
   (** A formal predicate as it occurs in a package definition *)
 
+type level = Ignore | Warn | Err
+
 val init : 
       ?env_ocamlpath: string ->
       ?env_ocamlfind_destdir: string ->
@@ -37,6 +39,7 @@ val init :
       ?env_ocamlfind_commands: string ->
       ?env_ocamlfind_ignore_dups_in: string ->
       ?env_ocamlfind_ignore_dups_in_list: string list ->
+      ?env_ocamlfind_inconsistent_lean_libs: level ->
       ?env_camllib: string ->
       ?env_ldconf: string ->
       ?config: string -> 
@@ -101,11 +104,11 @@ val init_manually :
       ?ocamldoc_command: string ->     (* default: "ocamldoc"   *)
       ?ignore_dups_in:string ->        (* default: None *)
       ?ignore_dups_in_list:string list ->  (* default: [] *)
+      ?inconsistent_lean_libs:level -> (* default: Warn *)
       ?stdlib: string ->               (* default: taken from Findlib_config *)
       ?ldconf: string ->
       ?config: string -> 
       install_dir: string ->
-      meta_dir: string ->
       search_path: string list ->
       unit ->
 	unit
@@ -122,11 +125,6 @@ val config_file : unit -> string
 val default_location : unit -> string
   (** Get the default installation directory for packages *)
 
-val meta_directory : unit -> string
-  (** Get the META installation directory for packages.
-   * Returns [""] if no such directory is configured.
-   *)
-
 val search_path : unit -> string list
   (** Get the search path for packages *)
 
@@ -142,6 +140,9 @@ val ocaml_stdlib : unit -> string
 val ocaml_ldconf : unit -> string
   (** Get the file name of [ld.conf] *)
 
+val inconsistent_lean_libs : unit -> level
+  (** How to deal with inconsistent lean libraries *)
+
 val package_directory : string -> string
   (** Get the absolute path of the directory where the given package is
    * stored.
@@ -149,7 +150,7 @@ val package_directory : string -> string
    * Raises [No_such_package] if the package cannot be found.
    *)
 
-val package_meta_file : string -> string
+val package_path : string -> Fl_package_base.package_path
   (** Get the absolute path of the META file of the given package *)
 
 val ignore_dups_in : unit -> string list
@@ -208,6 +209,18 @@ val package_deep_ancestors : string list -> string list -> string list
    * Raises [No_such_package] if one of the packages in [pkglist] or one of
    * the ancestors cannot be found. Raises [Package_loop] if there is a
    * cyclic dependency.
+   *)
+
+type package_type =
+  | Lean
+  | Lean_with_META
+  | Legacy
+
+val package_type : string -> package_type
+  (** Returns the package type:
+       - [Lean]: a new-style package without META file
+       - [Lean_with_META]: a lean package with META for compatibility
+       - [Legacy]: old-style package
    *)
 
 val resolve_path : ?base:string -> ?explicit:bool -> string -> string

@@ -1,6 +1,18 @@
-Document archive(plugin)
-
-Suggestion (gasche): -show-command only outputs the constructed
-command, but does not run it.
-
-Get ready for -ppx
+ - ocamlfind remove
+ - lean packages: support sub packages properly (also when there is a META file).
+     descend into subdirs also for lean_with_META
+     install: create subdirs as needed
+ - support that ocamlopt is not present
+ - support old compilers without cmo/cmx parsing helpers
+ - support "unparsed bare package" mode
+     These packages are just forwarded to the compiler.
+     Also use this for dynlink.
+ - fix generation of META for built-in libs like unix
+     No longer m4
+     Turn them into lean packages
+ - Support ppx
+ - support Dune's virtual packages
+ - clean up the version of OCAMLPATH passed to the compiler
+ - enforce DLL naming convention for lean pkgs
+ - Support dynload
+ - Documentation

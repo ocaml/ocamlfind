@@ -4,6 +4,7 @@
  *)
 
 open Findlib;;
+open Printf
 
 exception Usage;;
 exception Silent_error;;
@@ -73,6 +74,10 @@ let out_path ?(prefix="") s =
     | _ ->
 	prefix ^ slashify s
 
+let out_ppath ?prefix =
+  function
+  | Fl_package_base.Pkg_with_META m -> out_path ?prefix m
+  | Fl_package_base.Pkg_bare d -> out_path ?prefix d
 
 
 let percent_subst ?base spec lookup s =
@@ -682,7 +687,8 @@ let expand predicates eff_packages format =
     (* format:
      * %p         package name
      * %d         package directory
-     * %m         META file
+     * %m         META file (or dir of bare package)
+     * %T         package type (lean/legacy)
      * %D         description
      * %v         version
      * %a         archive file(s)
@@ -699,7 +705,12 @@ let expand predicates eff_packages format =
 	 let spec =
 	   [ "%p",  [pkg];
              "%d",  [out_path dir];
-             "%m",  [out_path (package_meta_file pkg)];
+             "%m",  [out_ppath (package_path pkg)];
+             "%T",  [match package_type pkg with
+                       | Lean -> "lean"
+                       | Lean_with_META -> "lean_with_META"
+                       | Legacy -> "legacy"
+                    ];
 	     "%D",  [try package_property predicates pkg "description"
 		     with Not_found -> "[n/a]"];
 	     "%v",  [try package_property predicates pkg "version"
@@ -735,6 +746,7 @@ let help_format() =
     %m         META file
     %D         description
     %v         version
+    %T         package type (lean, lean_with_META, legacy)
     %a         archive file(s)
     %+a        archive file(s), converted to absolute paths
     %A         archive files as single string
@@ -753,7 +765,7 @@ let help_format() =
 let query_package () =
 
   let long_format =
-    "package:     %p\ndescription: %D\nversion:     %v\narchive(s):  %A\nlinkopts:    %O\nlocation:    %d\n" in
+    "package:     %p\ndescription: %D\nversion:     %v\ntype:        %T\narchive(s):  %A\nlinkopts:    %O\nlocation:    %d\n" in
   let i_format =
     "-I %d" in
   let l_format =
@@ -963,23 +975,30 @@ let ocamlc which () =
 
   let native_spec_opt =
     match which with
-      | "ocamlc"     -> Ocaml_args.ocamlc_spec
-      | "ocamlcp"    -> Ocaml_args.ocamlcp_spec
-      | "ocamlmklib" -> Ocaml_args.ocamlmklib_spec
-      | "ocamlmktop" -> Ocaml_args.ocamlmktop_spec
-      | "ocamlopt"   -> Ocaml_args.ocamlopt_spec
-      | "ocamloptp"  -> Ocaml_args.ocamloptp_spec
+      | "ocamlc"     -> Fl_ocaml_args.ocamlc_spec
+      | "ocamlcp"    -> Fl_ocaml_args.ocamlcp_spec
+      | "ocamlmklib" -> Fl_ocaml_args.ocamlmklib_spec
+      | "ocamlmktop" -> Fl_ocaml_args.ocamlmktop_spec
+      | "ocamlopt"   -> Fl_ocaml_args.ocamlopt_spec
+      | "ocamloptp"  -> Fl_ocaml_args.ocamloptp_spec
       | _            -> None in
+  let native_excludes =
+    [ "-require" ] in
   let native_spec =
     match native_spec_opt with
       | None -> failwith ("Not supported in your configuration: " ^ which)
-      | Some s -> s in
+      | Some s ->
+          List.filter
+            (fun (name,_,_) -> not (List.mem name native_excludes))
+            s in
 
   let arg_spec =
     List.flatten
       [ [
           "-package", add_pkg,
             "<name>   Refer to package when compiling";
+          "-require", add_pkg,
+            "<name>   Same as -package";
           "-linkpkg", Arg.Set linkpkg,
             "          Link the packages in";
           "-predicates", add_pred,
@@ -1392,6 +1411,10 @@ let ocamlc which () =
     i_options @        (* Generated -I options from package analysis *)
     pp_command @       (* Optional preprocessor command *)
     ppx_commands @     (* Optional ppx extension commands *)
+    (if !linkpkg && Findlib_config.ocaml_has_autoliblinking then
+       [ "-noautoliblink" ]
+     else
+       []) @
     (if !linkpkg then l_options else []) @  (* Generated -ccopt -L options *)
     (if !linkpkg then archives else []) @   (* Gen file names to link *)
     pass_files' @                           (* File names from cmd line *)
@@ -1430,19 +1453,25 @@ let ocamldoc() =
   let options = ref [] in
 
   let native_spec =
-    match Ocaml_args.ocamldoc_spec with
+    match Fl_ocaml_args.ocamldoc_spec with
       | None -> failwith "Not supported in your configuration: ocamldoc"
       | Some s -> s in
+
+  let add_pkg s =
+    packages := !packages @ Fl_split.in_words s in
 
   parse_args
     ~align:false
     ( Arg.align
         [ "-package",
-	  Arg.String (fun s -> 
-		        packages := !packages @ Fl_split.in_words s),
+          Arg.String add_pkg,
 	  "<name>  Add this package to the search path";
           
-	  "-predicates",
+          "-require",
+          Arg.String add_pkg,
+            "<name>   Same as -package";
+
+          "-predicates",
 	  Arg.String (fun s ->
 		        predicates := !predicates @ Fl_split.in_words s),
 	  "<p>  Add predicate <p> when calculating dependencies";
@@ -1636,7 +1665,7 @@ let ocamldep () =
     Arg.String (fun s -> packages := !packages @ (Fl_split.in_words s)) in
 
   let native_spec =
-    match Ocaml_args.ocamldep_spec with
+    match Fl_ocaml_args.ocamldep_spec with
       | None -> failwith "Not supported in your configuration: ocamldep"
       | Some s -> s in
 
@@ -1646,6 +1675,8 @@ let ocamldep () =
                 "<p>       Use preprocessor with predicate <p>";
 	"-package", add_pkg,
 	         "<p>      Add preprocessor package <p>";
+        "-require", add_pkg,
+            "<name>   Same as -package";
         "-predicates", add_pred,
                     "<p>  Add predicate <p> when calculating dependencies";
 	"-ppopt", add_pp_opt,
@@ -1763,7 +1794,9 @@ let ocamlbrowser () =
 	"-all", Arg.Set add_all,
 	     "              Add all packages to include path";
 	"-package", add_pkg,
-	         "<p>      Add package <p> to include path";
+           "<p>      Add package <p> to include path";
+        "-require", add_pkg,
+            "<name>       Same as -package";
 	"-passopt", Arg.String (fun s -> pass_options := !pass_options @ [s]),
                  "<opt>    Pass option <opt> directly to ocamlbrowser";
         "-passrest", Arg.Rest (fun s -> pass_options := !pass_options @ [s]),
@@ -1966,24 +1999,28 @@ let rec patch_archives pkgdir pkg =
 
 
 let rec patch_pkg pkgdir pkg patches =
+  let patch_var name value =
+    let def =
+      { Fl_metascanner.def_var = name;
+        def_flav = `BaseDef;
+        def_preds = [];
+        def_value = value
+      } in
+    let defs =
+      List.filter
+        (fun d -> d.Fl_metascanner.def_var <> name)
+        pkg.Fl_metascanner.pkg_defs in
+    { pkg with
+      Fl_metascanner.pkg_defs = def :: defs
+    } in
   match patches with
     | [] -> pkg
     | (`Version v) :: patches' ->
-	let def =
-	  { Fl_metascanner.def_var = "version";
-	    def_flav = `BaseDef;
-	    def_preds = [];
-	    def_value = v 
-	  } in
-	let defs =
-	  List.filter
-	    (fun d -> d.Fl_metascanner.def_var <> "version")
-	    pkg.Fl_metascanner.pkg_defs in
-	let pkg' =
-	  { pkg with
-	      Fl_metascanner.pkg_defs = def :: defs
-	  } in
-	patch_pkg pkgdir pkg' patches'
+        let pkg' = patch_var "version" v in
+        patch_pkg pkgdir pkg' patches'
+    | (`Description v) :: patches' ->
+        let pkg' = patch_var "description" v in
+        patch_pkg pkgdir pkg' patches'
     | (`Rmpkg n) :: patches' ->
 	let children =
 	  List.filter
@@ -2030,10 +2067,20 @@ let char_lowercase_ascii c =
 let string_lowercase_ascii =
   String.map char_lowercase_ascii
 
+let dir_contains_pkg dir =
+  if Sys.file_exists(Filename.concat dir "META") then
+    Some "META"
+  else if Sys.file_exists(Filename.concat dir "lib.cma") then
+    Some "lib.cma"
+  else if Sys.file_exists(Filename.concat dir "lib.cmxa") then
+    Some "lib.cmxa"
+  else if Sys.file_exists(Filename.concat dir "lib.cmxs") then
+    Some "lib.cmxs"
+  else
+    None
 
 let install_package () =
   let destdir = ref (default_location()) in
-  let metadir = ref (meta_directory()) in
   let ldconf  = ref (ocaml_ldconf()) in
   let don't_add_directory_directive = ref false in
   let pkgname = ref "" in
@@ -2044,14 +2091,13 @@ let install_package () =
   let add_files = ref false in
   let optional = ref false in
   let patches = ref [] in
+  let lean = ref false in
+  let lean_gen_meta = ref false in
 
   let keywords =
     [ "-destdir", (Arg.String (fun s -> destdir := s)),
               ("<path>    Set the destination directory (default: " ^
 	       !destdir ^ ")");
-      "-metadir", (Arg.String (fun s -> metadir := s)),
-              ("<path>    Install the META file into this directory (default: "^
-	       (if !metadir = "" then "none" else !metadir) ^ ")");
       "-ldconf", (Arg.String (fun s -> ldconf := s)),
              ("<path>     Update this ld.conf file (default: " ^ !ldconf ^ ")");
       "-dont-add-directory-directive", (Arg.Set don't_add_directory_directive),
@@ -2066,10 +2112,18 @@ let install_package () =
                 "         The following files are optional";
       "-patch-version", Arg.String (fun s -> patches := !patches @ [`Version s]),
                      "<v> Set the package version to <v>";
+      "-patch-description", Arg.String (fun s -> patches := !patches @ [`Description s]),
+                         "<d> Set the package description to <d>";
       "-patch-rmpkg", Arg.String (fun s -> patches := !patches @ [`Rmpkg s]),
                    "<n>   Remove the subpackage <n>";
       "-patch-archives", Arg.Unit (fun () -> patches := !patches @ [`Archives]),
                       "   Remove non-existing archives";
+      "-lean", Arg.Set lean,
+            "             Install lean (new-style) package";
+      "-lean-gen-meta", Arg.Set lean_gen_meta,
+                     "    For -lean: generate a META file for backward compat";
+      "-legacy", Arg.Clear lean,
+              "           Install legacy package (this is the default)";
     ] in
   let errmsg = "usage: ocamlfind install [options] <package_name> <file> ..." in
 
@@ -2087,13 +2141,21 @@ let install_package () =
 	)
 	errmsg;
   if !pkgname = "" then (Arg.usage keywords errmsg; exit 1);
-  if not (Fl_split.is_valid_package_name !pkgname) then
-    failwith "Package names must not contain the character '.'!";
 
-  let pkgdir = Filename.concat !destdir !pkgname in
+  if !lean then (
+    let n = Fl_split.package_name !pkgname in
+    if n = [] || List.mem "" n || List.mem "." n then
+      failwith("Bad package name");
+  ) else
+    if  not (Fl_split.is_valid_package_name !pkgname) then
+      failwith "Legacy package names must not contain the character '.'!";
+  if !lean_gen_meta && not !lean then
+    failwith "For -lean-gen-meta you also have to request -lean!";
+
+  let subpath =
+    Fl_split.package_name !pkgname |> String.concat "/" in
+  let pkgdir = Filename.concat !destdir subpath in
   let dlldir = Filename.concat !destdir Findlib_config.libexec_name in
-  let has_metadir = !metadir <> "" in
-  let meta_dot_pkg = "META." ^ !pkgname in
 
   (* The list of all files to install: *)
   let full_list  = !auto_files @ !dll_files @ !nodll_files in
@@ -2103,57 +2165,68 @@ let install_package () =
   let nodll_list = l2 @ !nodll_files in
   let have_libexec = Sys.file_exists dlldir in
   let pkgdir_list = if have_libexec then nodll_list else full_list in
-  let pkgdir_eff_list =
-    (* The files that will be placed into pkgdir: *)
-    List.map
-      (fun f ->
-	 if f = meta_dot_pkg then "META" else f)
-      (List.filter
-	 (fun f ->
-	    not has_metadir ||
-	      (f <> "META" && f <> meta_dot_pkg))
-	 pkgdir_list) in
-  
-  (* Check whether META exists: (And check syntax) *)
-  let meta_name =
+
+  let pkgdir_map = Hashtbl.create 7 in
+  List.iter
+    (fun f ->
+      Hashtbl.add pkgdir_map (Filename.basename f) f
+    )
+    pkgdir_list;
+  let pkgdir_open file =
     try
-      List.find
-	(fun p ->
-	   let b = Filename.basename p in
-	   b = "META" || b = meta_dot_pkg)
-	nodll_list
+      let path = Hashtbl.find pkgdir_map file in
+      Some(open_in_bin path)
+    with
+      | Not_found -> None in
+
+  if !lean_gen_meta && Hashtbl.mem pkgdir_map "META" then
+    failwith "Cannot generate META when a META file is already given";
+
+  (* For lean packages: at least one archive must be called "lib" *)
+  if !lean then (
+    if not (List.exists
+              (fun p ->
+                let f = Filename.basename p in
+                f = "lib.cma" || f = "lib.cmxa" || f = "lib.cmxs"
+              )
+              pkgdir_list) then
+      failwith "For lean packages, archives must be named lib.(cma,cmxa,cmxs), and there must be at least one such archive to install"
+  );
+
+  (* Check whether META exists: (And check syntax) *)
+  let meta_in_path_opt =
+    try
+      Some(Hashtbl.find pkgdir_map "META")
     with
       | Not_found ->
-	  if !add_files then (
-	    let m1 = Filename.concat !metadir meta_dot_pkg in
-	    let m2 = Filename.concat pkgdir "META" in
-	    if Sys.file_exists m1 then
-	      m1
-	    else
-	      if Sys.file_exists m2 then
-		m2
-	      else
-		failwith "Cannot find META in package dir"
-	  )
-	  else
-	    failwith "The META file is missing" in
-
-  let meta_pkg = meta_pkg meta_name in
+          if !lean then
+            None
+          else
+            if !add_files then
+              None
+            else
+              failwith "The META file is missing" in
+  let meta_in_expr_opt =
+    match meta_in_path_opt with
+      | None -> None
+      | Some m -> Some(meta_pkg m) in
 
   if not !add_files then (
     (* Check for frequent reasons why installation can go wrong *)
-    if Sys.file_exists (Filename.concat !metadir meta_dot_pkg) then
-      failwith ("Package " ^ !pkgname ^ " is already installed\n - (file " ^ Filename.concat !metadir meta_dot_pkg ^ " already exists)");
-
-    if Sys.file_exists (Filename.concat pkgdir "META") then
-      failwith ("Package " ^ !pkgname ^ " is already installed\n - (file " ^ pkgdir ^ "/META already exists)");
+    match dir_contains_pkg pkgdir with
+      | None -> ()
+      | Some f ->
+          failwith ("Package " ^ !pkgname ^ " is already installed\n - (file " ^ pkgdir ^ "/" ^ f ^  " already exists)");
   );
   List.iter
-    (fun f ->
-       let f' = Filename.concat pkgdir f in
-       if Sys.file_exists f' then
-	 failwith ("Conflict with file: " ^ f'))
-    pkgdir_eff_list;
+    (fun path ->
+      let file = Filename.basename path in
+      if !add_files && file = "META" then
+        failwith "Cannot add META to existing package";
+      let file' = Filename.concat pkgdir file in
+      if Sys.file_exists file' then
+        failwith ("Conflict with file: " ^ file'))
+    pkgdir_list;
 
   if have_libexec then begin
     List.iter
@@ -2166,6 +2239,84 @@ let install_package () =
       dll_list
   end;
 
+  (* For lean packages: check META or generate META *)
+  let meta_expr_opt =
+    if !lean then (
+      let bare =
+        Fl_barescanner.scan_bare_files !pkgname pkgdir pkgdir_open in
+      Fl_barescanner.check_bare_pkg bare;
+      if !lean_gen_meta then
+        Some (Fl_barescanner.to_pkg_expr bare)
+      else (
+        match meta_in_expr_opt with
+          | Some m ->
+              let toks =
+                Fl_metachecker.check_incompat_with_lean_meta
+                  !pkgname pkgdir_open m in
+              if toks <> [] then (
+                prerr_endline (Fl_metachecker.incompat_to_text toks);
+                failwith "Bad META file."
+              );
+              Some m
+          | None ->
+              Some (Fl_barescanner.to_pkg_expr bare)
+      )
+    ) else
+      meta_in_expr_opt in
+
+  (* For lean packages: check list of requirements *)
+  let inconsistent_lean_libs =
+    Findlib.inconsistent_lean_libs() in
+  if !lean && inconsistent_lean_libs <> Findlib.Ignore then (
+    match meta_expr_opt with
+      | None ->
+          assert false
+      | Some m ->
+          let problem = ref false in
+          let reqs =
+            try Fl_metascanner.lookup "requires" [] m.Fl_metascanner.pkg_defs |> Fl_split.in_words
+            with Not_found -> [] in
+          List.iter
+            (fun pkg ->
+              try
+                match Findlib.package_type pkg with
+                  | Lean | Lean_with_META -> ()
+                  | Legacy ->
+                      problem := true;
+                      let msg =
+                        sprintf "Required package '%s' is a legacy package" pkg in
+                      ( match inconsistent_lean_libs with
+                          | Findlib.Ignore ->
+                              ()
+                          | Findlib.Warn ->
+                              eprintf "[WARNING] %s\n" msg
+                          | Findlib.Err ->
+                              eprintf "[ERROR] %s\n" msg
+                      )
+              with
+                | Findlib.No_such_package _ ->
+                    (* ignore this for now *)
+                    ()
+            )
+            reqs;
+          if !problem then (
+            eprintf "**********************************************************************\n";
+            eprintf "* This lean package uses installed packages that are not lean.       *\n";
+            eprintf "* Because of this you will not be able to use this package           *\n";
+            eprintf "* with only the basic lookup feature built into the compiler.        *\n";
+            ( match inconsistent_lean_libs with
+              | Ignore -> ()
+              | Warn ->
+                  eprintf "* This situation is tolerated, but the packages should be fixed.     *\n"
+              | Err ->
+                  eprintf "* This is no longer accepted. Go and fix the packages.               *\n"
+            );
+            eprintf "**********************************************************************\n";
+            if inconsistent_lean_libs = Err then
+              failwith "Bad package"
+          )
+  );
+
   (* Create the package directory: *)
   install_create_directory !pkgname pkgdir;
 
@@ -2175,7 +2326,7 @@ let install_package () =
        try
 	 copy_file
 	   ~rename: (fun f ->
-			 if f = "META" || f = meta_dot_pkg then 
+                         if f = "META" then
 			   raise Skip_file
 			 else
 			   f)
@@ -2227,35 +2378,26 @@ let install_package () =
   end;
 
   (* Finally, write the META file: *)
-  let write_meta append_directory dir name =
-    (* If there are patches, write the patched META, else copy the file: *)
-    if !patches = [] then
-      copy_file 
-	~rename:(fun _ -> name)
-        ?append:(if append_directory then
-		   Some("\ndirectory=\"" ^ pkgdir ^ 
-			  "\" # auto-added by ocamlfind\n")
-		 else
-		   None)
-	meta_name
-	dir
-    else (
-      let p = Filename.concat dir name in
-      let patched_pkg = patch_pkg pkgdir meta_pkg !patches in
-      let out = open_out p in
-        Fl_metascanner.print out patched_pkg;
-      if append_directory then
-	output_string out ("\ndirectory=\"" ^ pkgdir ^ 
-			     "\" # auto-added by ocamlfind\n");
-      close_out out;
-      prerr_endline ("Installed " ^ p);
-    )
-  in
   if not !add_files then (
-    if has_metadir then
-      write_meta true !metadir meta_dot_pkg
-    else
-      write_meta false pkgdir "META";
+    (* If there are patches, write the patched META, else copy the file: *)
+    if !patches = [] && not !lean_gen_meta then (
+      match meta_in_path_opt with
+        | None ->
+            ()
+        | Some meta ->
+            copy_file meta pkgdir
+    ) else (
+      match meta_expr_opt with
+        | None ->
+            ()
+        | Some pkg ->
+            let p = Filename.concat pkgdir "META" in
+            let patched_pkg = patch_pkg pkgdir pkg !patches in
+            let out = open_out p in
+            Fl_metascanner.print out patched_pkg;
+            close_out out;
+            prerr_endline ("Installed " ^ p);
+    )
   );
 
   (* Check if there is a postinstall script: *)
@@ -2270,7 +2412,6 @@ let reserved_names = [ Findlib_config.libexec_name; "postinstall"; "postremove" 
 let remove_package () =
   let destdir = ref (default_location()) in
   let destdir_set = ref false in
-  let metadir = ref (meta_directory()) in
   let ldconf  = ref (ocaml_ldconf()) in
   let pkgname = ref "" in
 
@@ -2278,9 +2419,6 @@ let remove_package () =
     [ "-destdir", (Arg.String (fun s -> destdir := s; destdir_set := true)),
               ("<path>      Set the destination directory (default: " ^
 	       !destdir ^ ")");
-      "-metadir", (Arg.String (fun s -> metadir := s)),
-              ("<path>      Remove the META file from this directory (default: " ^
-	       (if !metadir = "" then "none" else !metadir) ^ ")");
       "-ldconf", (Arg.String (fun s -> ldconf := s)),
              ("<path>       Update this ld.conf file (default: " ^ !ldconf ^ ")");
     ] in
@@ -2300,8 +2438,6 @@ let remove_package () =
   if not (Fl_split.is_valid_package_name !pkgname) then
     failwith "Package names must not contain the character '.'!";
 
-  let meta_dot_pkg = "META." ^ !pkgname in
-  let has_metadir = !metadir <> "" in
   let pkgdir = Filename.concat !destdir !pkgname in
   let dlldir = Filename.concat !destdir Findlib_config.libexec_name in
   let have_libexec = Sys.file_exists dlldir in
@@ -2332,30 +2468,17 @@ let remove_package () =
 
   (* If there is a metadir, remove the META file from it: *)
   let meta_removal_ok =
-    if has_metadir then (
-      let f = Filename.concat !metadir meta_dot_pkg in
-      try
-        Unix.unlink f;
-        prerr_endline ("Removed " ^ f);
-        true
-      with
-        | Unix.Unix_error(Unix.ENOENT,_,_) ->
-            prerr_endline ("ocamlfind: [WARNING] No such file: " ^ f);
-            false
-        | Unix.Unix_error(code, _, arg) ->
-            raise(sys_error code arg)
-    ) else
-      let f = Filename.concat pkgdir "META" in
-      try
-        Unix.unlink f;
-        prerr_endline ("Removed " ^ f);
-        true
-      with
-        | Unix.Unix_error(Unix.ENOENT,_,_) ->
-            prerr_endline ("ocamlfind: [WARNING] No such file: " ^ f);
-            false
-        | Unix.Unix_error(code, _, arg) ->
-            raise(sys_error code arg) in
+    let f = Filename.concat pkgdir "META" in
+    try
+      Unix.unlink f;
+      prerr_endline ("Removed " ^ f);
+      true
+    with
+      | Unix.Unix_error(Unix.ENOENT,_,_) ->
+          prerr_endline ("ocamlfind: [WARNING] No such file: " ^ f);
+          false
+      | Unix.Unix_error(code, _, arg) ->
+          raise(sys_error code arg) in
 
   if meta_removal_ok then (
 
@@ -2457,11 +2580,7 @@ let print_configuration() =
 	  (Findlib.search_path());
 	Printf.printf "Packages will be installed in/removed from:\n    %s\n"
 	  (dir (Findlib.default_location()));
-	Printf.printf "META files will be installed in/removed from:\n    %s\n"
-	  (let md = Findlib.meta_directory() in
-	   if md = "" then "the corresponding package directories" else dir md
-	  );
-	Printf.printf "The standard library is assumed to reside in:\n    %s\n"
+        Printf.printf "The standard library is assumed to reside in:\n    %s\n"
 	  (Findlib.ocaml_stdlib());
 	Printf.printf "The ld.conf file can be found here:\n    %s\n"
 	  (Findlib.ocaml_ldconf());
@@ -2472,13 +2591,10 @@ let print_configuration() =
 	List.iter print_endline (Findlib.search_path())
     | Some "destdir" ->
 	print_endline (Findlib.default_location())
-    | Some "metadir" ->
-	print_endline (Findlib.meta_directory())
     | Some "metapath" ->
-        let mdir = Findlib.meta_directory() in
         let ddir = Findlib.default_location() in
 	print_endline 
-          (if mdir <> "" then mdir ^ "/META.%s" else ddir ^ "/%s/META")
+          (ddir ^ "/%s/META")
     | Some "stdlib" ->
 	print_endline (Findlib.ocaml_stdlib())
     | Some "ldconf" ->
@@ -2631,9 +2747,9 @@ let main() =
       prerr_endline "   or: ocamlfind ocamlcp      [-help | other options] <file> ...";
       prerr_endline "   or: ocamlfind ocamlmklib   [-help | other options] <file> ...";
       prerr_endline "   or: ocamlfind ocamlmktop   [-help | other options] <file> ...";
-      if Ocaml_args.ocamlopt_spec <> None then
+      if Fl_ocaml_args.ocamlopt_spec <> None then
 	prerr_endline "   or: ocamlfind ocamlopt     [-help | other options] <file> ...";
-      if Ocaml_args.ocamloptp_spec <> None then
+      if Fl_ocaml_args.ocamloptp_spec <> None then
 	prerr_endline "   or: ocamlfind ocamloptp    [-help | other options] <file> ...";
       prerr_endline "   or: ocamlfind ocamldep     [-help | other options] <file> ...";
       prerr_endline "   or: ocamlfind ocamlbrowser [-help | other options]";
@@ -2668,16 +2784,18 @@ let main() =
 ;;
 
 
+let print_bt =
+  try ignore(Sys.getenv "OCAMLFIND_DEBUG"); true
+  with Not_found -> false;;
+
 try
   Sys.catch_break true;
+  if print_bt then Printexc.record_backtrace true;
   main()
 with
-  any ->
+    any ->
+    let bt = Printexc.get_backtrace() in
     prerr_endline ("Uncaught exception: " ^ Printexc.to_string any);
-    let raise_again =
-      try ignore(Sys.getenv "OCAMLFIND_DEBUG"); true
-      with Not_found -> false
-    in
-    if raise_again then raise any;
+    if print_bt then prerr_endline bt;
     exit 3
 ;;

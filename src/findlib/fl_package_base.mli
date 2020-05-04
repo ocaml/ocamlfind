@@ -5,6 +5,10 @@
 
 (** Direct access to the package graph and package files *)
 
+type package_path =
+  | Pkg_with_META of string  (** absolute path of META file *)
+  | Pkg_bare of string       (** directory of package *)
+
 type package =
     { package_name : string;
         (** The fully qualified package name, i.e. for subpackages the
@@ -13,8 +17,10 @@ type package =
 	 *)
       package_dir : string;
         (** The directory where to lookup package files *)
-      package_meta : string;
+      package_path : package_path;
         (** The path to the META file *)
+      package_lean : bool;
+        (** Whether this is a lean (new-style) package *)
       package_defs : Fl_metascanner.pkg_definition list;
         (** The definitions in the META file *)
       package_priv : package_priv;
@@ -156,7 +162,6 @@ val package_users : preds:string list -> string list -> string list
  *)
 
 val packages_in_meta_file : 
-      ?directory_required:bool ->
       name:string -> dir:string -> meta_file:string -> unit -> package list
   (** Parses the META file whose name is [meta_file]. In [name], the
    * name of the main package must be passed. [dir] is the
@@ -165,13 +170,15 @@ val packages_in_meta_file :
    *
    * Returns the package records found in this file. The "directory"
    * directive is already applied.
-   *
-   * @param directory_required If true, it is checked whether there is a
-   * "directory" directive in the main package. If this directive is missing,
-   * the function will fail.
    *)
 
-val package_definitions : search_path:string list -> string -> string list
+val packages_in_bare_dir :
+  name:string -> dir:string -> unit -> package list
+  (** Scans the directory [dir] for bare packages [name], plus
+      sub packages.
+   *)
+
+val package_definitions : search_path:string list -> string -> package_path list
   (** Return all META files defining this package that occur in the 
    * directories mentioned in [search_path]. The package name must be
    * fully-qualified. For simplicity, however, only the name of the main

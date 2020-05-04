@@ -11,6 +11,11 @@ let ocaml_ldconf = Filename.concat ocaml_stdlib "ld.conf";;
 
 let ocaml_has_autolinking = @AUTOLINK@;;
 
+let ocaml_has_autoliblinking =
+  match Fl_ocaml_args.ocamlc_spec with
+    | None -> false
+    | Some spec -> List.exists (fun (n,_,_) -> n = "-require") spec;;
+
 let libexec_name = "stublibs";;
 
 let system = "@SYSTEM@";;
