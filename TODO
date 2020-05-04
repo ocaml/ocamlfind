@@ -13,4 +13,6 @@
  - Support ppx
  - support Dune's virtual packages
  - clean up the version of OCAMLPATH passed to the compiler
-
+ - enforce DLL naming convention for lean pkgs
+ - Support dynload
+ - Documentation
