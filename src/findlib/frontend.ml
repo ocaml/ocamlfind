@@ -1224,12 +1224,12 @@ let ocamlc which () =
         (fun pkg ->
            Printf.fprintf
              initl
-             "Findlib.record_package Findlib.Record_core %S;;\n"
+             "let () = Findlib.record_package Findlib.Record_core %S;;\n"
              pkg
         )
         eff_packages;
       output_string initl
-	("Findlib.record_package_predicates [" ^
+	("let () = Findlib.record_package_predicates [" ^
 	 String.concat ";"
 	   (List.map
 	      (fun pred -> "\"" ^ String.escaped pred ^ "\"")
