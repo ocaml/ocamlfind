@@ -30,7 +30,7 @@
 `)'
 
 `package "toplevel" ('
-`  requires = "compiler-libs.bytecomp"'
+`  requires = "compiler-libs.bytecomp compiler-libs.optcomp dynlink"'
 `  version = "[distributed with Ocaml]"'
 `  description = "Toplevel interactions"'
 `  archive(byte) = "ocamltoplevel.cma"'
