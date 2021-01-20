@@ -30,10 +30,17 @@
 `)'
 
 `package "toplevel" ('
-`  requires = "compiler-libs.bytecomp compiler-libs.optcomp dynlink"'
+`  requires = "compiler-libs.bytecomp"'
 `  version = "[distributed with Ocaml]"'
 `  description = "Toplevel interactions"'
 `  archive(byte) = "ocamltoplevel.cma"'
+`)'
+
+`package "native-toplevel" ('
+`  requires = "compiler-libs.optcomp dynlink"'
+`  version = "[distributed with Ocaml]"'
+`  description = "Toplevel interactions"'
 `  archive(native) = "ocamltoplevel.cmxa"'
+`  exists_if = "ocamltoplevel.cmxa"'
 `)'
 
