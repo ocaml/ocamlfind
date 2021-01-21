@@ -543,7 +543,8 @@ fi
 # bytes?
 
 if [ -f "${ocaml_core_stdlib}/bytes.cmi" -o \
-     -f "${ocaml_core_stdlib}/stdlib__bytes.cmi" ]; then
+     -f "${ocaml_core_stdlib}/stdlib__bytes.cmi" -o \
+     -f "${ocaml_core_stdlib}/stdlib__Bytes.cmi" ]; then
     echo "bytes: found, installing fake library"
     lbytes="bytes"
     cbytes=0
