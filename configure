@@ -456,7 +456,10 @@ fi
 
 # Check whether ocamlbuild is present
 
-if [ -f "${ocaml_core_stdlib}/ocamlbuild/ocamlbuildlib.cma" ]; then
+if [ -f "${ocaml_sitelib}/ocamlbuild/META" ]; then
+    lobuild=""
+    echo "ocamlbuild: package already present"
+elif [ -f "${ocaml_core_stdlib}/ocamlbuild/ocamlbuildlib.cma" ]; then
     lobuild=ocamlbuild
     echo "ocamlbuild: found"
 else
@@ -469,6 +472,10 @@ fi
 if [ $with_camlp4 -eq 0 ]; then
     lcamlp4=''
     echo "camlp4: disabled"
+elif [ -f "${ocaml_sitelib}/camlp4/META" ]; then
+    echo "camlp4: package already present"
+    lcamlp4=''
+    with_camlp4=0
 else if in_path camlp4; then
     camlp4_dir=`camlp4 -where | tr -d '\015'`
     if [ ${use_cygpath} -gt 0 ]; then
