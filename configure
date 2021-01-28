@@ -420,10 +420,75 @@ ocamlc -opaque >/dev/null 2>/dev/null || opaque=""
 
 echo "Configuring libraries..."
 
-# Check whether Bigarray is present.
+check_library () {
+    if [ -z "$2" ]; then
+        cmi_file="$1.cmi"
+    else
+        cmi_file="$2"
+    fi
+    if [ -f "${ocaml_core_stdlib}/${cmi_file}" ]; then
+        echo "$1: found"
+        return 0
+    else
+        echo "$1: not present"
+        return 1
+    fi
+}
 
+lunix=unix
 lbigarray=bigarray
-# always
+lstr=str
+lthreads=threads
+locamldoc=ocamldoc
+llabltk=labltk
+lspacetime=raw_spacetime
+lgraphics=graphics
+
+if ! check_library unix; then
+    lunix=''
+    echo "unix: not present (possible since 4.08)"
+    echo "configure: ocamlfind requires OCaml's Unix library" 1>&2
+    exit 1
+fi
+
+if ! check_library bigarray; then
+    lbigarray=''
+fi
+
+if ! check_library str; then
+    lstr=''
+fi
+
+if ! check_library threads threads/thread.cmi; then
+    if ! check_library vmthreads threads/thread.cmi; then
+        lthreads=''
+    fi
+fi
+
+if ! check_library ocamldoc ocamldoc/odoc.cmi; then
+    locamldoc=''
+fi
+
+if ! check_library labltk labltk/labtk.cma; then
+    llabltk=''
+fi
+
+if ! check_library spacetime raw_spacetime_lib.cmxa; then
+    lspacetime=''
+fi
+
+if ! check_library graphics; then
+    lgraphics=''
+fi
+
+# compiler-libs? (tests directory instead of file)
+if [ -d "${ocaml_core_stdlib}/compiler-libs" ]; then
+    lcomplibs=compiler-libs
+    echo "compiler-libs: found"
+else
+    echo "compiler-libs: not present"
+    lcomplibs=''
+fi
 
 # Dynlink check.
 
@@ -438,20 +503,6 @@ if [ -f "${ocaml_core_stdlib}/dynlink.cmxa" ]; then
 else
     natdynlink="archive(native) = \"\""
     echo "native dynlink: not found"
-fi
-
-# Check whether labltk is present.
-
-if [ -f "${ocaml_core_stdlib}/labltk/labltk.cma" ]; then
-    llabltk=labltk
-    echo "labltk: found"
-else
-    llabltk=''
-    echo "labltk: not present"
-    if [ $with_toolbox -gt 0 ]; then
-	echo "Sorry, toolbox requires labltk - omitting toolbox."
-    fi
-    with_toolbox=0
 fi
 
 # Check whether ocamlbuild is present
@@ -509,15 +560,6 @@ else
 fi
 fi
 
-# compiler-libs?
-if [ -d "${ocaml_core_stdlib}/compiler-libs" ]; then
-    echo "compiler-libs: found"
-    lcomplibs="compiler-libs"
-else
-    echo "compiler-libs: not present"
-    lcomplibs=""
-fi
-
 # dbm?
 
 if [ -f "${ocaml_sitelib}/dbm/META" ]; then
@@ -560,30 +602,17 @@ else
     cbytes=1
 fi
 
-# spacetime?
 
-if [ -f "${ocaml_core_stdlib}/raw_spacetime_lib.cmxa" ]; then
-    echo "spacetime: found"
-    lspacetime="raw_spacetime"
-else
-    echo "spacetime: not found"
-    lspacetime=""
+if [ $with_toolbox -gt 0 ]; then
+    if [ -z "$lstr" -o -z "$llabltk" ]; then
+	echo "Sorry, toolbox requires str and labltk - omitting toolbox."
+        with_toolbox=0
+    fi
 fi
-
-# graphics?
-
-if [ -f "${ocaml_core_stdlib}/graphics.cmi" ]; then
-    echo "graphics: found"
-    lgraphics="graphics"
-else
-    echo "graphics: not found"
-    lgraphics=""
-fi
-
 
 # Generate the META files now.
 
-l="$ldbm dynlink $lgraphics $lnum str threads unix stdlib bigarray ocamldoc $llabltk $lcamlp4 $lobuild $lcomplibs $lbytes $lspacetime"
+l="$ldbm dynlink $lgraphics $lnum $lstr $lthreads $lunix stdlib $lbigarray $locamldoc $llabltk $lcamlp4 $lobuild $lcomplibs $lbytes $lspacetime"
 
 for dir in site-lib-src/*; do
     # We do not really know if $dir is a directory.
