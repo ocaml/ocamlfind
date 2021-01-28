@@ -2,9 +2,28 @@
 
 (* Runs ocamlc -help and extract the command-line signature *)
 
+{
 open Printf
+}
 
+let whitespace = [ ' ' '\t' ]
 
+rule get_switch = parse
+| whitespace* ('-' [ '-' 'a'-'z' 'A'-'Z' '0'-'9' '_' ',' ]+ as switch_name)
+  whitespace? (_* as help_text) eof
+    {Some (switch_name, help_text)}
+| whitespace* '-' whitespace+ (_* as help_text) eof
+    {Some ("-", help_text)}
+| _?
+    {None}
+
+and has_argument = parse
+| whitespace* [ '<' '[' '{' ]
+    {true}
+| _?
+    {false}
+
+{
 let read_lines file =
   let f = open_in file in
   let lines = ref [] in
@@ -43,35 +62,32 @@ let get_help cmd =
 ;;
 
 
-let switch1_re = Str.regexp "[ \t]*\\(-[-a-zA-Z0-9_,]+\\)[ \t]?\\(.*\\)$";;
-let switch2_re = Str.regexp "[ \t]*\\(-\\)[ \t]+\\(.*\\)$";;
+let get_switch s = get_switch (Lexing.from_string s)
+let has_argument s = has_argument (Lexing.from_string s)
 
-let argument_re = Str.regexp "[ \t]*[<[{]";;
 
 let rec extract_signature lines =
   match lines with
     | [] ->
 	[]
     | line :: lines' ->
-	if Str.string_match switch1_re line 0 || Str.string_match switch2_re line 0 then (
-	  let switch_name = Str.matched_group 1 line in
-	  let help_text = Str.matched_group 2 line in
-	  let has_arg = Str.string_match argument_re help_text 0 in
-	  let help_lines, lines'' = extract_help_continuation lines' in
-	  let help_text' = String.concat "\n" (help_text :: help_lines) in
-	  let r = 
-	    (switch_name, has_arg, help_text') in
-	  r :: extract_signature lines''
-	)
-	else
-	  extract_signature lines'
+	  match get_switch line with
+            | Some (switch_name, help_text) ->
+	        let has_arg = has_argument help_text in
+	        let help_lines, lines'' = extract_help_continuation lines' in
+	        let help_text' = String.concat "\n" (help_text :: help_lines) in
+	        let r = 
+	          (switch_name, has_arg, help_text') in
+	        r :: extract_signature lines''
+            | None ->
+	        extract_signature lines'
   
 and extract_help_continuation lines =
   match lines with
     | [] ->
 	( [], [] )
     | line :: lines' ->
-	if Str.string_match switch1_re line 0 || Str.string_match switch2_re line 0 then
+	if get_switch line <> None then
 	  ( [], lines )
 	else
 	  let help_lines, lines'' = extract_help_continuation lines' in
@@ -134,4 +150,4 @@ let main() =
 
 
 main();;
-
+}
