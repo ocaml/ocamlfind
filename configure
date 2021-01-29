@@ -418,76 +418,113 @@ ocamlc -opaque >/dev/null 2>/dev/null || opaque=""
 ######################################################################
 # Configure libraries
 
+check_before_install=0
+findlib_installed_meta=''
+if [ -d "${ocaml_sitelib}" ]; then
+    previous_config="${ocaml_sitelib}/findlib/Makefile.packages"
+    if [ -f "${previous_config}" ]; then
+        echo "Querying installation: found list of findlib-generated META files"
+        eval "$(sed -ne 's/ /,/g' -e 's/^SITELIB_META,*=,*\([^,].*[^,]\),*/findlib_installed_meta="\1"/p' "$previous_config")"
+        echo "Installation has: $findlib_installed_meta"
+    else
+        previous_config=''
+        check_before_install=1
+        echo "Querying installation: META list not found"
+        echo "make install will double-check installed META files"
+    fi
+else
+    previous_config=''
+fi
+
 echo "Configuring libraries..."
 
-check_library () {
-    if [ -z "$2" ]; then
-        cmi_file="$1.cmi"
+# Only succeeds if ${ocaml_sitelib}/$1/META exists and we're **certain**
+# it wasn't installed by a previous findlib installation.
+is_third_party_META () {
+    if [ $check_before_install -eq 0 ]; then
+        if [ -f "${ocaml_sitelib}/$1/META" ]; then
+            case ",$findlib_installed_meta," in
+                *,$1,*)
+                    return 1;;
+                *)
+                return 0;;
+            esac
+        else
+            return 1
+        fi
     else
-        cmi_file="$2"
-    fi
-    if [ -f "${ocaml_core_stdlib}/${cmi_file}" ]; then
-        echo "$1: found"
-        return 0
-    else
-        echo "$1: not present"
         return 1
     fi
 }
 
-lunix=unix
-lbigarray=bigarray
-lstr=str
-lthreads=threads
-locamldoc=ocamldoc
-llabltk=labltk
-lspacetime=raw_spacetime
-lgraphics=graphics
+check_library () {
+    if is_third_party_META $1; then
+        echo "$1: package already present"
+        # Library is present - exit code is 0 because the library is found
+        # (e.g. detection for Unix) but we don't actually add it to the
+        # generated_META list.
+        return 0
+    fi
 
-if ! check_library unix; then
-    lunix=''
-    echo "unix: not present (possible since 4.08)"
+    if [ -z "$3" ]; then
+        check_library "$1" "$2" "$1.cmi"
+        return $?
+    fi
+
+    package="$1"
+    if [ -z "$2" ]; then
+        msg=''
+    else
+        msg=" ($2)"
+    fi
+
+    shift 2
+    for file; do
+        if [ -e "${ocaml_core_stdlib}/${file}" ]; then
+            echo "${package}: found"
+            if [ "$package" = 'num' ]; then
+                generated_META="${generated_META} num num-top"
+                numtop='num-top'
+            else
+                generated_META="${generated_META} ${package}"
+            fi
+            return 0
+        fi
+    done
+
+    echo "$package: not present${msg}"
+    return 1
+}
+
+generated_META='dynlink stdlib'
+numtop=''
+
+if ! check_library unix 'possible since 4.08'; then
     echo "configure: ocamlfind requires OCaml's Unix library" 1>&2
     exit 1
 fi
 
-if ! check_library bigarray; then
-    lbigarray=''
-fi
+check_library bigarray 'possible since 4.08'
+check_library compiler-libs '' 'compiler-libs'
+check_library dbm 'normal since 4.00'
+check_library graphics 'normal since 4.09'
+check_library num 'normal since 4.06'
+check_library ocamlbuild 'normal since 4.03' ocamlbuild/ocamlbuildlib.cma
+check_library ocamldoc '' ocamldoc/odoc.cmi
+check_library raw_spacetime 'normal since 4.12' raw_spacetime_lib.cmxa
+check_library threads '' threads/thread.cmi vmthreads/thread.cmi;
 
-if ! check_library str; then
-    lstr=''
-fi
-
-if ! check_library threads threads/thread.cmi; then
-    if ! check_library vmthreads threads/thread.cmi; then
-        lthreads=''
-    fi
-fi
-
-if ! check_library ocamldoc ocamldoc/odoc.cmi; then
-    locamldoc=''
-fi
-
-if ! check_library labltk labltk/labtk.cma; then
-    llabltk=''
-fi
-
-if ! check_library spacetime raw_spacetime_lib.cmxa; then
-    lspacetime=''
-fi
-
-if ! check_library graphics; then
-    lgraphics=''
-fi
-
-# compiler-libs? (tests directory instead of file)
-if [ -d "${ocaml_core_stdlib}/compiler-libs" ]; then
-    lcomplibs=compiler-libs
-    echo "compiler-libs: found"
+# Need to know if str and labltk are available for the toolbox
+if check_library str 'possible since 4.08'; then
+    have_str=1
 else
-    echo "compiler-libs: not present"
-    lcomplibs=''
+    have_str=0
+fi
+
+if check_library labltk 'normal since 4.02' labltk/labtk.cma; then
+    have_labltk=1
+else
+    have_labltk=0
 fi
 
 # Dynlink check.
@@ -505,28 +542,11 @@ else
     echo "native dynlink: not found"
 fi
 
-# Check whether ocamlbuild is present
-
-if [ -f "${ocaml_sitelib}/ocamlbuild/META" ]; then
-    lobuild=""
-    echo "ocamlbuild: package already present"
-elif [ -f "${ocaml_core_stdlib}/ocamlbuild/ocamlbuildlib.cma" ]; then
-    lobuild=ocamlbuild
-    echo "ocamlbuild: found"
-else
-    lobuild=""
-    echo "ocamlbuild: not present"
-fi
-
 # Check on camlp4:
 
 if [ $with_camlp4 -eq 0 ]; then
     lcamlp4=''
     echo "camlp4: disabled"
-elif [ -f "${ocaml_sitelib}/camlp4/META" ]; then
-    echo "camlp4: package already present"
-    lcamlp4=''
-    with_camlp4=0
 else if in_path camlp4; then
     camlp4_dir=`camlp4 -where | tr -d '\015'`
     if [ ${use_cygpath} -gt 0 ]; then
@@ -560,35 +580,6 @@ else
 fi
 fi
 
-# dbm?
-
-if [ -f "${ocaml_sitelib}/dbm/META" ]; then
-    echo "dbm: package already present"
-    ldbm=""
-elif [ -f "${ocaml_core_stdlib}/dbm.cmi" ]; then
-    echo "dbm: found"
-    ldbm="dbm"
-else
-    echo "dbm: not present (normal since OCaml-4.00)"
-    ldbm=""
-fi
-
-# num?
-
-if [ -f "${ocaml_sitelib}/num/META" ]; then
-    echo "num: package already present"
-    lnum=""
-    numtop=""
-elif [ -f "${ocaml_core_stdlib}/num.cmi" ]; then
-    echo "num: found but not as package"
-    lnum="num num-top"
-    numtop="num-top"
-else
-    echo "num: not present (normal since OCaml-4.06)"
-    lnum=""
-    numtop=""
-fi
-
 # bytes?
 
 if [ -f "${ocaml_core_stdlib}/bytes.cmi" -o \
@@ -604,7 +595,7 @@ fi
 
 
 if [ $with_toolbox -gt 0 ]; then
-    if [ -z "$lstr" -o -z "$llabltk" ]; then
+    if [ $have_str -eq 0 -o $have_labltk -eq 0 ]; then
 	echo "Sorry, toolbox requires str and labltk - omitting toolbox."
         with_toolbox=0
     fi
@@ -612,14 +603,12 @@ fi
 
 # Generate the META files now.
 
-l="$ldbm dynlink $lgraphics $lnum $lstr $lthreads $lunix stdlib $lbigarray $locamldoc $llabltk $lcamlp4 $lobuild $lcomplibs $lbytes $lspacetime"
-
 for dir in site-lib-src/*; do
     # We do not really know if $dir is a directory.
     rm -f $dir/META
 done
 
-for lib in $l; do
+for lib in $generated_META; do
     if=""
     if [ -f site-lib-src/$lib/interfaces.out ]; then
 	if=`cat site-lib-src/$lib/interfaces.out`
@@ -690,7 +679,6 @@ echo "LIB_SUFFIX=${lib_suffix}" >>Makefile.config
 echo "CUSTOM=${custom}" >>Makefile.config
 echo "PARTS=${parts}" >>Makefile.config
 echo "INSTALL_TOPFIND=${with_topfind}" >>Makefile.config
-echo "INSTALL_CAMLP4=${with_camlp4}" >>Makefile.config
 echo "USE_CYGPATH=${use_cygpath}" >>Makefile.config
 echo "HAVE_NATDYNLINK=${have_natdynlink}" >>Makefile.config
 echo "VERSION=${version}" >>Makefile.config
@@ -703,6 +691,8 @@ if [ "$mingw_lib" != "" ]; then
     echo "OCAMLOPT_FLAGS=-I \"${mingw_lib}\"" >>Makefile.config
 fi
 echo "OPAQUE=${opaque}" >>Makefile.config
+echo "CHECK_BEFORE_INSTALL=${check_before_install}" >>Makefile.config
+echo "SITELIB_META=${generated_META}" >Makefile.packages
 
 # All OK
 

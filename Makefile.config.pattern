@@ -59,3 +59,9 @@ PARTS=findlib findlib-toolbox
 # Whether the "topfind" script is installed in $(OCAML_CORE_STDLIB):
 #----------------------------------------------------------------------
 INSTALL_TOPFIND=1
+
+#----------------------------------------------------------------------
+# Whether make install should update Makefile.packages just before
+# running
+#----------------------------------------------------------------------
+CHECK_BEFORE_INSTALL=0

@@ -11,6 +11,7 @@
 META
 
 Makefile.config
+Makefile.packages
 findlib.conf
 ocargs.log
 src/findlib/depend
