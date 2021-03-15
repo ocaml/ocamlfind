@@ -17,7 +17,7 @@ guide-html/TIMESTAMP: src/*.sgml src/*.mod QUICKSTART.xml common.xml config.xml
 	mkdir -p guide-html
 	cd guide-html; \
 	rm -f *.htm*; \
-	jade -t sgml -D$(DOCBOOK_HTML) -D$(SRC) findlib.sgml; \
+	openjade -t sgml -D$(DOCBOOK_HTML) -D$(SRC) findlib.sgml; \
 	true
 	readme -html QUICKSTART.xml >guide-html/quickstart.html
 	touch guide-html/TIMESTAMP
@@ -26,7 +26,7 @@ ref-html/TIMESTAMP: src/*.sgml src/*.mod common.xml config.xml $(EXPORTED:%=../s
 	mkdir -p ref-html
 	cd ref-html; \
 	rm -f *.htm*; \
-	jade -t sgml -D$(DOCBOOK_HTML) -D$(SRC) findlib_ref.sgml; \
+	openjade -t sgml -D$(DOCBOOK_HTML) -D$(SRC) findlib_ref.sgml; \
 	true
 	mkdir -p ref-html/lib
 	cd ../src/findlib && \
