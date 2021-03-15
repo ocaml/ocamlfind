@@ -7,7 +7,12 @@
 
 #set -x
 
-version="1.8.1"
+version="$(sed -ne 's/^version: *"\(.*\)\.git".*/\1/p' opam)"
+
+if test -z "$version"; then
+  echo "Internal error: failed to parse version number from opam file" 1>&2
+	exit 1
+fi
 
 # Remember the old IFS value:
 oldifs="$IFS"

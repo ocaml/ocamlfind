@@ -24,6 +24,7 @@
 # Exclusions must be mentioned before inclusions.
 
 f configure
+f opam
 f findlib.conf.in
 f INSTALL
 f LICENSE
