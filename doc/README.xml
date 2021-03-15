@@ -109,6 +109,16 @@ configuration files, and library routines in detail.</p>
     <title>List of Changes</title>
     <ul>
 
+      <li>
+        <p><em>GIT:</em> Overhaul how separately installed packages (e.g. num)
+        are handled (by David Allsopp).</p>
+        <p>Switch to opam-2.0 file format (by David Allsopp).</p>
+        <p>Fix an incomaptibility with ocaml-4.13 (by David Allsopp).</p>
+        <p>Expose the native toplevel (by Louis Gesbert).</p>
+        <p>Fix an incompatibility with "Jane Street Style" (by Mark Laws).</p>
+        <p>Switch from m4 to sed (by kit-ty-kate).</p>
+      </li>
+
     <li>
       <p><em>1.8.1:</em> Adapted to upcoming ocaml-4.09.</p>
       <p>New API Findlib.list_packages' can specify a package prefix.</p>
