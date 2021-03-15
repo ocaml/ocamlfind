@@ -45,7 +45,7 @@ f tools/collect_files
 f tools/file_exists
 d tools/extract_args
 f tools/extract_args/Makefile
-f tools/extract_args/extract_args.ml
+f tools/extract_args/extract_args.mll
 f tools/safe_camlp4
 f tools/make-package-macosx
 f tools/patch
