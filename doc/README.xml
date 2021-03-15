@@ -110,7 +110,7 @@ configuration files, and library routines in detail.</p>
     <ul>
 
       <li>
-        <p><em>GIT:</em> Overhaul how separately installed packages (e.g. num)
+        <p><em>1.9:</em> Overhaul how separately installed packages (e.g. num)
         are handled (by David Allsopp).</p>
         <p>Switch to opam-2.0 file format (by David Allsopp).</p>
         <p>Fix an incomaptibility with ocaml-4.13 (by David Allsopp).</p>

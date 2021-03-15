@@ -34,7 +34,7 @@ ref-html/TIMESTAMP: src/*.sgml src/*.mod common.xml config.xml $(EXPORTED:%=../s
 	touch ref-html/TIMESTAMP
 
 src/findlib_reference.xml: src/*.sgml src/*.mod
-	sgml2xml -D$(DOCBOOK_HTML) -D$(SRC) \
+	osx -D$(DOCBOOK_HTML) -D$(SRC) \
 		findlib_reference.sgml >src/findlib_reference.xml ; \
 	true
 
