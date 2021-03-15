@@ -4,6 +4,7 @@
 #----------------------------------------------------------------------
 
 include Makefile.config
+include Makefile.packages
 
 TOP=.
 
@@ -16,19 +17,17 @@ all:
 opt:
 	for p in $(PARTS); do ( cd src/$$p; $(MAKE) opt ) || exit; done
 
-install:
+install: check-installation
 	mkdir -p "$(prefix)$(OCAMLFIND_BIN)"
 	mkdir -p "$(prefix)$(OCAMLFIND_MAN)"
 	$(MAKE) install-config
 	for p in $(PARTS); do ( cd src/$$p; $(MAKE) install ); done
 	$(MAKE) install-meta
-	test -z "$(NUMTOP)" || { cd src/findlib; $(MAKE) install-num-top; }
-	if [ $(INSTALL_CAMLP4) -eq 1 ]; then \
-		cp tools/safe_camlp4 "$(prefix)$(OCAMLFIND_BIN)"; \
-	fi
+	test ! -f 'site-lib-src/num-top/META' || { cd src/findlib; $(MAKE) install-num-top; }
+	test ! -f 'site-lib-src/camlp4/META' ||	cp tools/safe_camlp4 "$(prefix)$(OCAMLFIND_BIN)" \
 	$(MAKE) install-doc
 
-uninstall:
+uninstall: check-installation
 	$(MAKE) uninstall-doc
 	$(MAKE) uninstall-meta
 	for p in `cd src; echo *`; do ( cd src/$$p; $(MAKE) uninstall ); done
@@ -38,7 +37,7 @@ clean:
 	for p in `cd src; echo *`; do ( cd src/$$p; $(MAKE) clean ); done
 	(cd itest-aux; $(MAKE) clean)
 	(cd tools/extract_args; $(MAKE) clean)
-	rm -f findlib.conf
+	rm -f findlib.conf Makefile.packages
 
 .PHONY: release
 release: README
@@ -84,13 +83,31 @@ uninstall-doc:
 	rm -f "$(prefix)$(OCAMLFIND_MAN)/man5/site-lib.5"
 
 
+.PHONY: check-installation
+check-installation:
+	if [ "$(CHECK_BEFORE_INSTALL)" -eq 1 ]; then \
+    for x in camlp4 dbm graphics labltk num ocamlbuild; do \
+      if [ -f "$(prefix)$(OCAML_SITELIB)/$$x/META" ]; then \
+        if ! grep -Fq '[distributed with Ocaml]' "$(prefix)/$(OCAML_SITELIB)/$$x/META"; then \
+          rm -f site-lib-src/$$x/META; \
+        fi \
+      fi \
+    done; \
+    test -f "site-lib-src/num/META" || rm -f "site-lib-src/num-top/META"; \
+  fi
+	echo 'SITELIB_META =' > Makefile.packages.in
+	for x in `ls site-lib-src`; do test ! -f "site-lib-src/$$x/META" || echo $$x >> Makefile.packages.in; done
+	tr '\n' ' ' < Makefile.packages.in > Makefile.packages
+	rm Makefile.packages.in
+
 .PHONY: install-meta
 install-meta:
-	for x in `ls site-lib-src`; do if [ -f "site-lib-src/$$x/META" ]; then mkdir -p "$(prefix)$(OCAML_SITELIB)/$$x"; cp site-lib-src/$$x/META "$(prefix)$(OCAML_SITELIB)/$$x"; fi; done
+	for x in $(SITELIB_META); do mkdir -p "$(prefix)$(OCAML_SITELIB)/$$x"; cp site-lib-src/$$x/META "$(prefix)$(OCAML_SITELIB)/$$x"; done
+	mkdir -p "$(prefix)$(OCAML_SITELIB)/findlib"; cp Makefile.packages "$(prefix)$(OCAML_SITELIB)/findlib/Makefile.packages"
 
 .PHONY: uninstall-meta
 uninstall-meta:
-	for x in `ls site-lib-src`; do if [ -f "site-lib-src/$$x/META" ]; then rm -rf "$(prefix)$(OCAML_SITELIB)/$$x"; fi; done
+	for x in $(SITELIB_META); do rm -rf "$(prefix)$(OCAML_SITELIB)/$$x"; done
 
 .PHONY: install-config
 install-config:
