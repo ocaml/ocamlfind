@@ -616,7 +616,7 @@ for dir in site-lib-src/*; do
     rm -f $dir/META
 done
 
-for lib in $generated_META $lcamlp4 $lbytes; do
+for lib in $generated_META $lbytes; do
     if=""
     if [ -f site-lib-src/$lib/interfaces.out ]; then
 	if=`cat site-lib-src/$lib/interfaces.out`
