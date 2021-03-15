@@ -83,12 +83,12 @@ and edit Makefile.config by hand.
 If the generated META files do not work, edit them (this is very very unlikely).
 
 Note: The META files are generated from the META.in files in the same
-directories by m4:
+directories by sed:
 
-	m4 -Dos=<os> <more parameters...> site-lib/<name>/META.in
+	sed -e 's/%%os%%/<os>/g' <more parameters...> site-lib/<name>/META.in
 		>site-lib/<name>/META
 
-You may invoke m4 manually to create different META files, but this
+You may invoke sed manually to create different META files, but this
 is currently not documented.
 
 

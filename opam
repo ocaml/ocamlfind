@@ -21,6 +21,7 @@ build: [
     "-mandir" man
     "-config" "%{lib}%/findlib.conf"
     "-no-custom"
+    "-no-camlp4" {!ocaml:preinstalled & ocaml:version >= "4.02.0"}
     "-no-topfind" {ocaml:preinstalled}
   ]
   [make "all"]
@@ -32,6 +33,5 @@ install: [
 ]
 depends: [
   "ocaml" {>= "4.00.0"} # ocamlfind uses String.map
-  "conf-m4" {build}
 ]
 depopts: ["graphics"]
