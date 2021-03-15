@@ -4,7 +4,7 @@
 #----------------------------------------------------------------------
 
 include Makefile.config
-include Makefile.packages
+-include Makefile.packages
 
 TOP=.
 
