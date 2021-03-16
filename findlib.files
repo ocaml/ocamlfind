@@ -25,12 +25,14 @@
 
 f configure
 f opam
+f ocamlfind.install
 f findlib.conf.in
 f INSTALL
 f LICENSE
 f Makefile
 f Makefile.config.pattern
 f itest
+f ocaml-stub
 
 d itest-aux
 f itest-aux/Makefile
