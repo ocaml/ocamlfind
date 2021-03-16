@@ -24,7 +24,7 @@ install: check-installation
 	for p in $(PARTS); do ( cd src/$$p; $(MAKE) install ); done
 	$(MAKE) install-meta
 	test ! -f 'site-lib-src/num-top/META' || { cd src/findlib; $(MAKE) install-num-top; }
-	test ! -f 'site-lib-src/camlp4/META' ||	cp tools/safe_camlp4 "$(prefix)$(OCAMLFIND_BIN)" \
+	test ! -f 'site-lib-src/camlp4/META' ||	cp tools/safe_camlp4 "$(prefix)$(OCAMLFIND_BIN)"
 	$(MAKE) install-doc
 
 uninstall: check-installation
