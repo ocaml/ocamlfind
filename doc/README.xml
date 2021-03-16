@@ -109,6 +109,8 @@ configuration files, and library routines in detail.</p>
     <title>List of Changes</title>
     <ul>
 
+      <li><p><em>1.9.1:</em>  Fixes a few install-related issues, like missing files.</p></li>
+
       <li>
         <p><em>1.9:</em> Overhaul how separately installed packages (e.g. num)
         are handled (by David Allsopp).</p>
