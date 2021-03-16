@@ -150,13 +150,16 @@ p doc/.*\.dtd
 f doc/Makefile
 
 d doc/guide-html
+f doc/guide-html/index.html
 p doc/guide-html/.*\.html
 f doc/guide-html/TIMESTAMP
 
 d doc/ref-html
 d doc/ref-html/lib
+f doc/ref-html/index.html
 p doc/ref-html/.*\.html
 f doc/ref-html/TIMESTAMP
+f doc/ref-html/lib/index.html
 p doc/ref-html/lib/.*\.html
 p doc/ref-html/lib/.*\.css
 

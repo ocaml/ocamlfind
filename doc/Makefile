@@ -57,7 +57,7 @@ ref-man/TIMESTAMP: src/findlib_reference.xml
 
 
 clean:
-	rm -rf guide-html guide-man
+	rm -rf guide-html guide-man ref-html/TIMESTAMP
 	rm -f src/*.xml
 
 distclean:
