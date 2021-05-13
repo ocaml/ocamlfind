@@ -102,7 +102,7 @@ check-installation:
 
 .PHONY: install-meta
 install-meta:
-	for x in $(SITELIB_META); do mkdir -p "$(prefix)$(OCAML_SITELIB)/$$x"; cp site-lib-src/$$x/META "$(prefix)$(OCAML_SITELIB)/$$x"; done
+	for x in $(SITELIB_META); do mkdir -p "$(prefix)$(OCAML_SITELIB)/$$x"; cp site-lib-src/$$x/META "$(prefix)$(OCAML_SITELIB)/$$x/META.tmp" && mv "$(prefix)$(OCAML_SITELIB)/$$x/META.tmp" "$(prefix)$(OCAML_SITELIB)/$$x/META"; done
 	mkdir -p "$(prefix)$(OCAML_SITELIB)/findlib"; cp Makefile.packages "$(prefix)$(OCAML_SITELIB)/findlib/Makefile.packages"
 
 .PHONY: uninstall-meta
