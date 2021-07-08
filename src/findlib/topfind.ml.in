@@ -166,6 +166,10 @@ let load_deeply pkglist =
   (* Get the sorted list of ancestors *)
   let eff_pkglist =
     Findlib.package_deep_ancestors !predicates pkglist in
+  List.iter (fun pkg ->
+    try let error = Findlib.package_property !predicates pkg "error" in
+      failwith ("Error from package `" ^ pkg ^ "': " ^ error)
+    with Not_found -> ()) eff_pkglist ;
   (* Load the packages in turn: *)
   load eff_pkglist
 ;;
