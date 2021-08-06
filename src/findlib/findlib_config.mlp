@@ -18,9 +18,8 @@ let system = "@SYSTEM@";;
 
 let dll_suffix =
   match Sys.os_type with
-      "Unix" -> ".so"
-    | "Win32" -> ".dll"
-    | "Cygwin" -> ".dll"
-    | "MacOS" -> ""        (* don't know *)
+    | "Unix"  | "BeOS"   -> ".so"
+    | "Win32" | "Cygwin" -> ".dll"
+    | "MacOS"            -> ""        (* don't know *)
     | _ -> failwith "Unknown Sys.os_type"
 ;;
