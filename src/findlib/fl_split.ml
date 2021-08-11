@@ -140,7 +140,7 @@ let norm_dir s =
     done
   in
   match Sys.os_type with
-      "Unix" | "Cygwin" -> norm_dir_unix(); Buffer.contents b
+      "Unix" | "BeOS" | "Cygwin" -> norm_dir_unix(); Buffer.contents b
     | "Win32" -> norm_dir_win(); Buffer.contents b
     | _ -> failwith "This os_type is not supported"
 ;;
