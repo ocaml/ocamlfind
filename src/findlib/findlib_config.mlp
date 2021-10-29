@@ -16,11 +16,11 @@ let libexec_name = "stublibs";;
 let system = "@SYSTEM@";;
 (* - "mingw", "mingw64", "win32", "cygwin", "linux_elf", ... *)
 
-let dll_suffix =
+let dll_suffixes =
   match Sys.os_type with
-      "Unix" -> ".so"
-    | "Win32" -> ".dll"
-    | "Cygwin" -> ".dll"
-    | "MacOS" -> ""        (* don't know *)
+      "Unix" -> [".so"]
+    | "Win32" -> [".dll"]
+    | "Cygwin" -> [".dll"]
+    | "MacOS" -> [".dylib"; ".so"]
     | _ -> failwith "Unknown Sys.os_type"
 ;;

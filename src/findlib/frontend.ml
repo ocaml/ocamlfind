@@ -267,8 +267,8 @@ let write_ldconf filename lines new_lines =
 
 
 let is_dll p =
-  let sfx = Findlib_config.dll_suffix in
-  sfx <> "" && Filename.check_suffix p sfx
+  let sfx = Findlib_config.dll_suffixes in
+  List.exists (Filename.check_suffix p) sfx
 ;;
 
 
