@@ -526,7 +526,7 @@ else
     have_str=0
 fi
 
-if check_library labltk 'normal since 4.02' labltk/labtk.cma; then
+if check_library labltk 'normal since 4.02' labltk/labltk.cma; then
     have_labltk=1
 else
     have_labltk=0
