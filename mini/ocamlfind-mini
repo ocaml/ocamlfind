@@ -575,7 +575,7 @@ let copy_file ?(rename = (fun name -> name)) ?(append = "") src dstdir =
     let ch_out = open_out_bin outpath in
     try
       let buflen = 4096 in
-      let buf = String.create buflen in
+      let buf = Bytes.create buflen in
       let pos = ref 0 in
       let len = ref (input ch_in buf 0 buflen) in
       while !len > 0 do

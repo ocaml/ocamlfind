@@ -589,6 +589,7 @@ fi
 # bytes?
 # (NB. This is always ours, and it doesn't go into generated_META)
 
+req_bytes=""
 if [ -f "${ocaml_core_stdlib}/bytes.cmi" -o \
      -f "${ocaml_core_stdlib}/stdlib__bytes.cmi" -o \
      -f "${ocaml_core_stdlib}/stdlib__Bytes.cmi" ]; then
@@ -598,6 +599,7 @@ if [ -f "${ocaml_core_stdlib}/bytes.cmi" -o \
 else
     echo "bytes: not found, installing compat library"
     lbytes=""
+    req_bytes="bytes"
     cbytes=1
 fi
 
@@ -637,7 +639,9 @@ done
 
 for part in `cd src; echo *`; do
     if [ -f "src/$part/META.in" ]; then
-	sed -e "s/@VERSION@/$version/g" src/$part/META.in >src/$part/META
+	sed -e "s/@VERSION@/$version/g" \
+            -e "s/@REQUIRES@/${req_bytes}/g" \
+            src/$part/META.in >src/$part/META
     fi
 done
 
@@ -665,11 +669,16 @@ fi
 # Write Makefile.config
 
 parts="findlib"
+ocamlfind_ocamlflags=""
+ocamlfind_archives="findlib.cma unix.cma"
 if [ $with_toolbox -gt 0 ]; then
     parts="$parts findlib-toolbox"
 fi
 if [ $cbytes -gt 0 ]; then
-    parts="$parts bytes"
+    # bytes first, because findlib needs it
+    parts="bytes $parts"
+    ocamlfind_ocamlflags="-I ../bytes"
+    ocamlfind_archives="bytes.cma ${ocamlfind_archives}"
 fi
 
 echo "# Makefile.config written by configure" >Makefile.config
@@ -681,6 +690,8 @@ echo "OCAML_THREADS=${ocaml_threads}" >>Makefile.config
 echo "OCAMLFIND_BIN=${ocamlfind_bin}" >>Makefile.config
 echo "OCAMLFIND_MAN=${ocamlfind_man}" >>Makefile.config
 echo "OCAMLFIND_CONF=${ocamlfind_config}" >>Makefile.config
+echo "OCAMLFIND_OCAMLFLAGS=${ocamlfind_ocamlflags}" >>Makefile.config
+echo "OCAMLFIND_ARCHIVES=${ocamlfind_archives}" >>Makefile.config
 echo "OCAML_AUTOLINK=${ocaml_autolink}" >>Makefile.config
 echo "OCAML_REMOVE_DIRECTORY=${have_remdir}" >>Makefile.config
 echo "EXEC_SUFFIX=${exec_suffix}" >>Makefile.config

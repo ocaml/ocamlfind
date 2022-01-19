@@ -32,6 +32,9 @@ TXOBJECTS      = topfind.cmx
 OCAMLFIND_OBJECTS = ocaml_args.cmo frontend.cmo
 OCAMLFIND_XOBJECTS = ocaml_args.cmx frontend.cmx
 
+# OCAMLFIND_ARCHIVES: set in Makefile.config
+OCAMLFIND_XARCHIVES = $(OCAMLFIND_ARCHIVES:.cma=.cmxa)
+
 NUMTOP_OBJECTS = num_top_printers.cmo num_top.cmo
 
 DYNLOAD_OBJECTS  = fl_dynload.cmo
@@ -47,12 +50,12 @@ opt: ocamlfind_opt$(EXEC_SUFFIX) findlib.cmxa findlib_top.cmxa topfind \
 num-top: num_top.cma
 
 ocamlfind$(EXEC_SUFFIX): findlib.cma $(OCAMLFIND_OBJECTS)
-	$(OCAMLC) $(CUSTOM) -o ocamlfind$(EXEC_SUFFIX) -g findlib.cma unix.cma \
-	          $(OCAMLC_FLAGS) $(OCAMLFIND_OBJECTS)
+	$(OCAMLC) $(CUSTOM) -o ocamlfind$(EXEC_SUFFIX) -g $(OCAMLFIND_ARCHIVES) \
+	          $(OCAMLC_FLAGS) $(OCAMLFIND_OCAMLFLAGS) $(OCAMLFIND_OBJECTS)
 
 ocamlfind_opt$(EXEC_SUFFIX): findlib.cmxa $(OCAMLFIND_XOBJECTS)
-	$(OCAMLOPT) -o ocamlfind_opt$(EXEC_SUFFIX) findlib.cmxa unix.cmxa \
-		  $(OCAMLOPT_FLAGS) $(OCAMLFIND_XOBJECTS)
+	$(OCAMLOPT) -o ocamlfind_opt$(EXEC_SUFFIX) $(OCAMLFIND_XARCHIVES) \
+		  $(OCAMLOPT_FLAGS) $(OCAMLFIND_OCAMLFLAGS) $(OCAMLFIND_XOBJECTS)
 
 test_parser$(EXEC_SUFFIX): fl_metascanner.cmx test_parser.cmx fl_metatoken.cmx fl_meta.cmx
 	$(OCAMLOPT) -o test_parser$(EXEC_SUFFIX) fl_meta.cmx fl_metatoken.cmx fl_metascanner.cmx test_parser.cmx
@@ -153,19 +156,19 @@ depend: *.ml *.mli fl_meta.ml fl_metascanner.ml findlib_config.ml topfind.ml
 # .src
 
 .mml.cmo:
-	$(OCAMLC) $(OPAQUE) -g -vmthread -c -impl $<
+	$(OCAMLC) $(OPAQUE) $(OCAMLC_FLAGS) $(OCAMLFIND_OCAMLFLAGS) -g -vmthread -c -impl $<
 
 .mml.cmx:
-	$(OCAMLOPT) $(OPAQUE) -thread -c -impl $<
+	$(OCAMLOPT) $(OPAQUE) $(OCAMLOPT_FLAGS) $(OCAMLFIND_OCAMLFLAGS) -thread -c -impl $<
 
 .ml.cmx:
-	$(OCAMLOPT) $(OPAQUE) -c $<
+	$(OCAMLOPT) $(OPAQUE) $(OCAMLOPT_FLAGS) $(OCAMLFIND_OCAMLFLAGS) -c $<
 
 .ml.cmo:
-	$(OCAMLC) $(OPAQUE) -g -c $<
+	$(OCAMLC) $(OPAQUE)  $(OCAMLC_FLAGS) $(OCAMLFIND_OCAMLFLAGS) -g -c $<
 
 .mli.cmi:
-	$(OCAMLC) $(OPAQUE) -c $<
+	$(OCAMLC) $(OPAQUE)  $(OCAMLC_FLAGS) $(OCAMLFIND_OCAMLFLAGS) -c $<
 
 #.src.ml:
 #	$(CAMLP4O) -impl $< -o $@

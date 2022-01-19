@@ -8,7 +8,7 @@ version = "@VERSION@"
 package "internal" (
   version = "@VERSION@"
   description = "Package manager"
-  requires = ""
+  requires = "@REQUIRES@"
   archive(byte) = "findlib.cma"
   archive(native) = "findlib.cmxa"
   plugin(byte) = "findlib.cma"
