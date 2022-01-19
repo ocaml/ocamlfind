@@ -109,6 +109,8 @@ configuration files, and library routines in detail.</p>
     <title>List of Changes</title>
     <ul>
 
+      <li><p><em>1.9.2:</em> Fixes a build problem regarding OCaml-5.00</p></li>
+
       <li><p><em>1.9.1:</em>  Fixes a few install-related issues, like missing files.</p></li>
 
       <li>
