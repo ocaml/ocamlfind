@@ -7,6 +7,8 @@
 
 open Fl_metatoken
 
+exception Error of string
+
 type formal_pred =
     [ `Pred of string     (** Positive occurence of a formal predicate var *)
     | `NegPred of string  (** Negative occurence of a formal predicate var *)

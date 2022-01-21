@@ -5,6 +5,37 @@
 open Fl_metatoken
   
 open Printf
+
+exception Failure
+exception Error of string
+
+module Stream : sig
+  type 'a t
+
+  val singleton : 'a -> 'a t
+  val cons : 'a -> (unit -> 'a t) -> 'a t
+
+  val peek : 'a t -> 'a option
+  val junk : 'a t -> unit
+end = struct
+  type 'a t = { mutable data : 'a data Lazy.t }
+  and 'a data =
+    | Nil
+    | Cons of 'a * 'a data Lazy.t
+
+  let singleton x = {data = lazy (Cons (x, lazy Nil))}
+  let cons x xs = {data = lazy (Cons (x, lazy (Lazy.force (xs ()).data)))}
+
+  let peek s =
+    match Lazy.force s.data with
+    | Nil -> None
+    | Cons (a, _) -> Some a
+
+  let junk s =
+    match Lazy.force s.data with
+    | Nil -> ()
+    | Cons (_, d) -> s.data <- d
+end
   
 type formal_pred = [ | `Pred of string | `NegPred of string ]
 
@@ -38,12 +69,12 @@ let scan_lexing buf =
       | Newline -> next (line + 1) (Lexing.lexeme_end buf)
       | Eof ->
           let pos = (Lexing.lexeme_start buf) - pos0
-          in Stream.lsing (fun _ -> (line, pos, Eof))
+          in Stream.singleton (line, pos, Eof)
       | _ ->
           let pos = (Lexing.lexeme_start buf) - pos0
           in
-            Stream.lcons (fun _ -> (line, pos, t))
-              (Stream.slazy (fun _ -> next line pos0))
+            Stream.cons (line, pos, t)
+              (fun () -> next line pos0)
   in next 1 0
   
 let scan ch = scan_lexing (Lexing.from_channel ch)
@@ -72,15 +103,15 @@ let parse_lexing lexbuf =
                        let subpkg =
                          (try parse_all true __strm
                           with
-                          | Stream.Failure ->
+                          | Failure ->
                               raise
-                                (Stream.Error
+                                (Error
                                    (error_msg
                                       "Error in subpackage definition" line
                                       col))) in
                        let rest =
                          (try parse_all need_rparen __strm
-                          with | Stream.Failure -> raise (Stream.Error ""))
+                          with | Failure -> raise (Error ""))
                        in
                          {
                            pkg_defs = rest.pkg_defs;
@@ -88,11 +119,11 @@ let parse_lexing lexbuf =
                          })
                   | _ ->
                       raise
-                        (Stream.Error
+                        (Error
                            (error_msg "'(' expected after string" l c))))
             | _ ->
                 raise
-                  (Stream.Error
+                  (Error
                      (error_msg "String literal expected after 'package'"
                         line col))))
       | Some ((line, col, Name n)) ->
@@ -100,13 +131,13 @@ let parse_lexing lexbuf =
            let props =
              (try parse_properties __strm
               with
-              | Stream.Failure ->
+              | Failure ->
                   raise
-                    (Stream.Error
+                    (Error
                        (error_msg "Error in 'name = value' clause" line col))) in
            let rest =
              (try parse_all need_rparen __strm
-              with | Stream.Failure -> raise (Stream.Error "")) in
+              with | Failure -> raise (Error "")) in
            let (args, flav, value) = props in (* TODO: Check args *)
            let args' = List.sort compare (mk_set args) in
            let def =
@@ -126,7 +157,7 @@ let parse_lexing lexbuf =
            if need_rparen
            then
              raise
-               (Stream.Error
+               (Error
                   ("Unexpected end of file in line " ^
                      ((string_of_int line) ^
                         (" position " ^ (string_of_int col)))))
@@ -137,7 +168,7 @@ let parse_lexing lexbuf =
            if not need_rparen
            then
              raise
-               (Stream.Error
+               (Error
                   ("Unexpected ')' in line " ^
                      ((string_of_int line) ^
                         (" position " ^ (string_of_int col)))))
@@ -146,9 +177,9 @@ let parse_lexing lexbuf =
       | Some ((line, col, _)) ->
           (Stream.junk __strm;
            raise
-             (Stream.Error
+             (Error
                 (error_msg "Expected 'name = value' clause" line col)))
-      | _ -> raise Stream.Failure
+      | _ -> raise Failure
   and parse_properties stream =
     let (__strm : _ Stream.t) = stream
     in
@@ -157,20 +188,20 @@ let parse_lexing lexbuf =
           (Stream.junk __strm;
            let arg1 =
              (try parse_argument __strm
-              with | Stream.Failure -> raise (Stream.Error "")) in
+              with | Failure -> raise (Error "")) in
            let args =
              (try parse_arguments __strm
-              with | Stream.Failure -> raise (Stream.Error "")) in
+              with | Failure -> raise (Error "")) in
            let flav =
              (try parse_flavour __strm
-              with | Stream.Failure -> raise (Stream.Error ""))
+              with | Failure -> raise (Error ""))
            in
              (match Stream.peek __strm with
               | Some ((line3, col3, String s)) ->
                   (Stream.junk __strm; ((arg1 :: args), flav, s))
               | _ ->
                   raise
-                    (Stream.Error
+                    (Error
                        (error_msg "Expected string constant after '='" line
                           col))))
       | Some ((line, col, Equal)) ->
@@ -180,7 +211,7 @@ let parse_lexing lexbuf =
                 (Stream.junk __strm; ([], `BaseDef, s))
             | _ ->
                 raise
-                  (Stream.Error
+                  (Error
                      (error_msg
                         "'=' must be followed by a string constant in line "
                         line col))))
@@ -191,17 +222,17 @@ let parse_lexing lexbuf =
                 (Stream.junk __strm; ([], `Appendix, s))
             | _ ->
                 raise
-                  (Stream.Error
+                  (Error
                      (error_msg
                         "'+=' must be followed by a string constant in line "
                         line col))))
       | Some ((line, col, _)) ->
           (Stream.junk __strm;
            raise
-             (Stream.Error
+             (Error
                 (error_msg "Expected a '=' or a '(arguments,...)=' clause"
                    line col)))
-      | _ -> raise Stream.Failure
+      | _ -> raise Failure
   and parse_arguments stream =
     let (__strm : _ Stream.t) = stream
     in
@@ -210,18 +241,18 @@ let parse_lexing lexbuf =
           (Stream.junk __strm;
            let arg =
              (try parse_argument __strm
-              with | Stream.Failure -> raise (Stream.Error "")) in
+              with | Failure -> raise (Error "")) in
            let args =
              (try parse_arguments __strm
-              with | Stream.Failure -> raise (Stream.Error ""))
+              with | Failure -> raise (Error ""))
            in arg :: args)
       | Some ((_, _, RParen)) -> (Stream.junk __strm; [])
       | Some ((line, col, _)) ->
           (Stream.junk __strm;
            raise
-             (Stream.Error
+             (Error
                 (error_msg "Another predicate or a ')' expected" line col)))
-      | _ -> raise Stream.Failure
+      | _ -> raise Failure
   and parse_argument stream =
     let (__strm : _ Stream.t) = stream
     in
@@ -233,12 +264,12 @@ let parse_lexing lexbuf =
             | Some ((l, c, Name n)) -> (Stream.junk __strm; `NegPred n)
             | _ ->
                 raise
-                  (Stream.Error
+                  (Error
                      (error_msg "Name expected after '-'" line col))))
       | Some ((line, col, _)) ->
           (Stream.junk __strm;
-           raise (Stream.Error (error_msg "Name or -Name expected" line col)))
-      | _ -> raise Stream.Failure
+           raise (Error (error_msg "Name or -Name expected" line col)))
+      | _ -> raise Failure
   and parse_flavour stream =
     let (__strm : _ Stream.t) = stream
     in
@@ -247,8 +278,8 @@ let parse_lexing lexbuf =
       | Some ((line, col, PlusEqual)) -> (Stream.junk __strm; `Appendix)
       | Some ((line, col, _)) ->
           (Stream.junk __strm;
-           raise (Stream.Error (error_msg "'+' or '+=' expected" line col)))
-      | _ -> raise Stream.Failure in
+           raise (Error (error_msg "'+' or '+=' expected" line col)))
+      | _ -> raise Failure in
   let rec check_defs p l =
     match l with
     | [] -> ()
@@ -265,7 +296,7 @@ let parse_lexing lexbuf =
                  let args = string_of_preds def.def_preds
                  in
                    raise
-                     (Stream.Error
+                     (Error
                         (prefix ^
                            ("Double definition of '" ^
                               (def.def_var ^ (args ^ "'"))))))
@@ -283,12 +314,12 @@ let parse_lexing lexbuf =
               (if List.mem n !l
                then
                  raise
-                   (Stream.Error ("Double definition for subpackage " ^ p'))
+                   (Error ("Double definition for subpackage " ^ p'))
                else ();
                if String.contains n '.'
                then
                  raise
-                   (Stream.Error
+                   (Error
                       ("Subpackage name must not contain '.': \"" ^
                          (n ^ "\"")))
                else ();
@@ -299,7 +330,7 @@ let parse_lexing lexbuf =
     try
       let pkg = parse_all false (scan_lexing lexbuf)
       in (check_pkg "" pkg; pkg)
-    with | Stream.Error "" -> raise (Stream.Error "Syntax Error")
+    with | Error "" -> raise (Error "Syntax Error")
   
 let parse ch = parse_lexing (Lexing.from_channel ch)
   
@@ -338,7 +369,7 @@ let parse2_lexing lexbuf =
     Printf.sprintf "%s at line %d position %d" msg line col in
   let next_token = scan2_lexing lexbuf in
   let raise_err error_fun line col =
-    raise (Stream.Error (error_fun line col)) in
+    raise (Error (error_fun line col)) in
   let get_tok test error_fun =
     let (line, col, tok) = next_token ()
     in
@@ -346,7 +377,7 @@ let parse2_lexing lexbuf =
       | None -> raise_err error_fun line col
       | Some result -> result in
   let get_rule rule arg error_fmt line col =
-    try rule arg with | Stream.Error _ -> raise_err error_fmt line col in
+    try rule arg with | Error _ -> raise_err error_fmt line col in
   let rec parse_all need_rparen =
     match next_token () with
     | (line, col, Name "package") ->
@@ -459,7 +490,7 @@ let parse2_lexing lexbuf =
                  let args = string_of_preds def.def_preds
                  in
                    raise
-                     (Stream.Error
+                     (Error
                         (prefix ^
                            ("Double definition of '" ^
                               (def.def_var ^ (args ^ "'"))))))
@@ -477,12 +508,12 @@ let parse2_lexing lexbuf =
               (if List.mem n !l
                then
                  raise
-                   (Stream.Error ("Double definition for subpackage " ^ p'))
+                   (Error ("Double definition for subpackage " ^ p'))
                else ();
                if String.contains n '.'
                then
                  raise
-                   (Stream.Error
+                   (Error
                       ("Subpackage name must not contain '.': \"" ^
                          (n ^ "\"")))
                else ();
@@ -491,7 +522,7 @@ let parse2_lexing lexbuf =
          pkg.pkg_children)
   in
     try let pkg = parse_all false in (check_pkg "" pkg; pkg)
-    with | Stream.Error "" -> raise (Stream.Error "Syntax Error")
+    with | Error "" -> raise (Error "Syntax Error")
   
 let parse2 ch = parse2_lexing (Lexing.from_channel ch)
 
