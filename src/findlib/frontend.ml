@@ -2015,7 +2015,7 @@ let meta_pkg meta_name =
     pkg
   with
   | Failure s
-  | Stream.Error s ->
+  | Fl_metascanner.Error s ->
     close_in f;
     failwith ("Cannot parse '" ^ meta_name ^ "': " ^ s)
 

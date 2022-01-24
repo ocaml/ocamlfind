@@ -44,6 +44,8 @@ type pkg_expr =
    *  the definitions of the subpackages.
    *)
 
+exception Error of string
+
 
 val parse : in_channel -> pkg_expr
   (** [parse ch:] 
@@ -51,13 +53,10 @@ val parse : in_channel -> pkg_expr
    * have a syntax compatible with the META format. The return value
    * contains the found definitions for the package and all subpackages.
    *
-   * [exception Stream.Error of string:] is
+   * [exception Error of string:] is
    * raised on syntax errors. The string explains the error.
    *)
 
-val parse2 : in_channel -> pkg_expr
-
-val parse2_lexing : Lexing.lexbuf -> pkg_expr
 val parse_lexing : Lexing.lexbuf -> pkg_expr
 
 
