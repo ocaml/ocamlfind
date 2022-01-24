@@ -71,7 +71,7 @@ let is_valid_package_name s =
 
 let path_separator =
   match Sys.os_type with
-      "Unix"   -> ':'
+    | "Unix" | "BeOS"   -> ':'
     | "Cygwin" -> ';'   (* You might want to change this *)
     | "Win32"  -> ';'
     | "MacOS"  -> failwith "Findlib: I do not know what is the correct path separator for MacOS. If you can help me, write a mail to gerd@gerd-stolpmann.de"
@@ -140,7 +140,7 @@ let norm_dir s =
     done
   in
   match Sys.os_type with
-      "Unix" | "Cygwin" -> norm_dir_unix(); Buffer.contents b
+      "Unix" | "BeOS" | "Cygwin" -> norm_dir_unix(); Buffer.contents b
     | "Win32" -> norm_dir_win(); Buffer.contents b
     | _ -> failwith "This os_type is not supported"
 ;;

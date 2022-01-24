@@ -1567,7 +1567,7 @@ let ocamldoc() =
 (* From ocamldep source code: *)
 let depends_on_char, continuation_char =
   match Sys.os_type with
-  | "Unix" | "Win32" | "Cygwin" -> ':', '\\'
+  | "Unix" | "BeOS" | "Win32" | "Cygwin" -> ':', '\\'
   | "MacOS" -> '\196', '\182'
   | _ -> assert false
 ;;
