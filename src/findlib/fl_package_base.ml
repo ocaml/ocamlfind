@@ -154,7 +154,7 @@ let packages_in_meta_file ?(directory_required = false)
       Failure s ->
 	close_in ch;
 	failwith ("While parsing '" ^ meta_file ^ "': " ^ s)
-    | Stream.Error s ->
+    | Fl_metascanner.Error s ->
 	close_in ch;
 	failwith ("While parsing '" ^ meta_file ^ "': " ^ s)
     | any ->
