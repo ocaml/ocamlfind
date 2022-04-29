@@ -643,13 +643,13 @@ knows automatic linking (from version 3.00), but it is not set if the
 </varlistentry>
 <varlistentry>
   <term>camlp4o</term>
-  <listitem><para>This is the reserved predicate for the standard O'Caml syntax.
+  <listitem><para>This is the reserved predicate for the standard OCaml syntax.
   It can be used in the <literal>-syntax</literal> predicate list.
   </para></listitem>
 </varlistentry>
 <varlistentry>
   <term>camlp4r</term>
-  <listitem><para>This is the reserved predicate for the revised O'Caml syntax.
+  <listitem><para>This is the reserved predicate for the revised OCaml syntax.
   It can be used in the <literal>-syntax</literal> predicate list.
   </para></listitem>
 </varlistentry>
@@ -704,7 +704,7 @@ You can use extended names: (1) With <literal>-I</literal> options,
 <refsect2>
 <title>How to set the names of the compiler executables</title>
 
-<para> Normally, the O'Caml bytecode compiler can be called under the name
+<para> Normally, the OCaml bytecode compiler can be called under the name
 <literal>ocamlc</literal>. However, this is not always true; sometimes a
 different name is chosen.</para>
 
@@ -798,7 +798,7 @@ ocamlfind ocamldep [-package <replaceable>package-name-list</replaceable> |
 <refsect2><title>Description</title>
 <para>
 This command is a driver for the tool <literal>ocamldep</literal> of the
-O'Caml distribution. This driver is only useful in conjunction with
+OCaml distribution. This driver is only useful in conjunction with
 the preprocessor camlp4; otherwise it does not provide more functions
 than <literal>ocamldep</literal> itself.
 </para>

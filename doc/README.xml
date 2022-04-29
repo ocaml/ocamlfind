@@ -34,7 +34,7 @@ directly deal with packages.
 
     <p>It is important to understand that findlib is <em>not</em> a
 general-purpose package manager (like rpm for Linux), and does <em>not</em>
-support the management of arbitrary files, but only O'Caml libraries.
+support the management of arbitrary files, but only OCaml libraries.
 However, there are lots of special functions for libraries. findlib
 is more comparable with Gnome's pkg-config and Perl's MakeMaker, but
 of course there are language-specific differences.</p>
@@ -347,13 +347,13 @@ Ivanov for pointing this problem out.)</p>
       <p>ocamlfind no longer emits auto-generated -ccopt options. These
          tend to accumulate, and it is possible that for large projects
          the maximum command line length is exceeded. Current versions of
-         the O'Caml compilers do not need these extra -ccopt anyway, so
+         the OCaml compilers do not need these extra -ccopt anyway, so
          this code is completely dropped.</p>
     </li>
 
     <li>
       <p><em>1.2.4:</em> Fix: Bigarray needs unix (Thanks to Markus Mottl).</p>
-      <p>Fix: In the version of camlp4 provided by O'Caml 3.11 various
+      <p>Fix: In the version of camlp4 provided by OCaml 3.11 various
          libraries do not contain dynlink anymore. Because of this, dynlink
          becomes a prerequisite of camlp4. (Thanks to Martin Jambon).</p>
       <p>Attempt: Fixing the space issue for paths (Win32). It is unclear
@@ -390,7 +390,7 @@ when installing safe_camlp4 (thanks to Daniel Janus)</p>
 Pietro Abate)</p>
 	<p>Better support for Windows (with help from Robert
 Roessler and David Allsopp)</p>
-	<p>Support for camlp4 on O'Caml 3.10</p>
+	<p>Support for camlp4 on OCaml 3.10</p>
 	<p>Fix: "ocamlfind install" with "-patch" option writes
 now correct META file for the case that subpackages occur</p>
 	<p>Adding environment variable OCAMLFIND_IGNORE_DUPS_IN
@@ -407,7 +407,7 @@ DLLs.</p>
 
       <li>
 	<p><em>1.1.1:</em> Bugfixes only: Fixed detection of threading model
-for O'Caml 3.09. Fixed alternate configuration files.</p>
+for OCaml 3.09. Fixed alternate configuration files.</p>
       </li>
 
       <li>
@@ -527,12 +527,12 @@ takes predicates into account (it did not do that in previous versions of
 findlib).</p>
       </li>
 
-      <li><p><em>0.9:</em> Changes for O'Caml 3.07 (-thread,
+      <li><p><em>0.9:</em> Changes for OCaml 3.07 (-thread,
       -vmthread). Includes Zack's toploop printers for bigints.</p>
       </li>
 
       <li><p><em>0.8 - 0.8.1:</em> Renamed a lot of modules to avoid name
-	clashes with O'Caml core modules.  Cygwin: Additional option
+	clashes with OCaml core modules.  Cygwin: Additional option
 	-cygpath for "configure".  The man pages have a NAME
 	section. Bugfix in Makefile wizard.</p>
       </li>
@@ -579,7 +579,7 @@ findlib).</p>
 	does not occur.</p>
 
 	<p>Fix: bytecode threads work again. (The wrong unix library was
-	linked for recent O'Caml versions.)</p>
+	linked for recent OCaml versions.)</p>
 
 	<p>Many smaller improvements; the docs have been updated.</p>
       </li>
@@ -611,7 +611,7 @@ findlib).</p>
 	<p>Optional alternate directory layout: All META files go into
 	a separate directory (see documentation under site-lib).</p>
 
-	<p>Findlib works now only for O'Caml 3; support for O'Caml 2 has been
+	<p>Findlib works now only for OCaml 3; support for OCaml 2 has been
 	dropped. As a consequence, the "configure" script could be
 	simplified; it is no longer necessary to figure out the
 	linker options.</p>
@@ -628,7 +628,7 @@ findlib).</p>
 	functionality, but it is sufficient to compile and install a
 	library. (But it does not support using a library.)</p>
 
-	<p>Support for the Cygwin port of O'Caml.</p>
+	<p>Support for the Cygwin port of OCaml.</p>
 
 	<p>Installation of packages: The file permissions are
 	preserved when files are installed.  However, the umask is
@@ -655,7 +655,7 @@ findlib).</p>
 	</p>
       </li>
 
-      <li><p><em>0.3 - 0.3.1:</em> Necessary updates for O'Caml
+      <li><p><em>0.3 - 0.3.1:</em> Necessary updates for OCaml
 3. Bugfix: Findlib did not work for bytecode threads. The reason was
 that findlib added the directory of the stdlib to the search
 path. Works now.

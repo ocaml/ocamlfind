@@ -1007,8 +1007,8 @@ let intro_screen frame =
   add_headline frame "The Makefile and META wizard";
   add_para frame "This wizard helps you creating Makefiles and META \
 files for simple projects. It assumes that all your source files \
-reside in a single directory, and that all source files are O'Caml \
-files (no support for mixed O'Caml/C projects). ocamllex, ocamlyacc, \
+reside in a single directory, and that all source files are OCaml \
+files (no support for mixed OCaml/C projects). ocamllex, ocamlyacc, \
 and camlp4 are supported.";
   add_para frame "The wizard generates a Makefile, and the Makefile \
 produces the META file. The Makefile is not perfect, and is not the ideal \
@@ -1547,7 +1547,7 @@ mainLoop();;
  * 	Renamed modules (prefix fl_)
  *
  * Revision 1.2  2002/07/29 19:52:23  gerd
- * 	Fixes for O'Caml 3.05
+ * 	Fixes for OCaml 3.05
  *
  * Revision 1.1  2002/05/26 14:09:07  gerd
  * 	Renaming

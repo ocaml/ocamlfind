@@ -22,7 +22,7 @@ findlib.</p>
   <sect1>
     <title>Findlib and the toploop</title> 
 
-<p>For a number of platforms, O'Caml can load bytecode-compiled
+<p>For a number of platforms, OCaml can load bytecode-compiled
 libraries dynamically. For these platforms, findlib is very simple to
 use as explained in the following. For other platforms, see the paragraph
 below about "custom toploops".</p>
@@ -110,7 +110,7 @@ for the revised syntax. (But you cannot switch between the syntaxes.)
   <sect1>
     <title>Custom Toploops</title>
 
-    <p>For some platforms, O'Caml does not implement loading external
+    <p>For some platforms, OCaml does not implement loading external
 libraries (e.g. Cygwin). One has to create a so-called custom toploop
 that statically links with these libraries. Example:
 
@@ -167,7 +167,7 @@ open Cgi;;
 ...
 </code>
 
-This works wherever O'Caml is installed.</p>
+This works wherever OCaml is installed.</p>
   </sect1>
 
   <sect1>
@@ -265,8 +265,8 @@ a Makefile is written.
   <sect1>
     <title>There is no magic!</title>
 
-    <p>Findlib is neither a patch of O'Caml nor uses it internal features of
-the O'Caml programming environment. It is only a convention to install
+    <p>Findlib is neither a patch of OCaml nor uses it internal features of
+the OCaml programming environment. It is only a convention to install
 software components in filesystem hierarchies, a library interpreting 
 this convention, and some frontend applications making the library useable for
 you.</p>

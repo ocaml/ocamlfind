@@ -384,8 +384,8 @@ fi
 ######################################################################
 # Does this version of OCaml support autolinking?
 
-# Works for O'Caml >= 3.00 on. Because findlib can only be compiled
-# with these O'Caml versions, we can safely assume that autolinking
+# Works for OCaml >= 3.00 on. Because findlib can only be compiled
+# with these OCaml versions, we can safely assume that autolinking
 # is enabled.
 
 ocaml_autolink="true"

@@ -39,7 +39,7 @@ There are three possibilities to configure the findlib library:
 
     <listitem>
     <para>
-    Whether the installed O'Caml version supports autolinking or not.
+    Whether the installed OCaml version supports autolinking or not.
     </para>
     </listitem>
 
@@ -230,7 +230,7 @@ ocamlmktop = "ocamlmktop.opt"
   <term><literal>stdlib</literal></term>
   <listitem><para>
     This variable determines the location of the standard library. This must
-    be the same directory for which the O'Caml compilers are configured.
+    be the same directory for which the OCaml compilers are configured.
   </para>
 
   <para>
@@ -246,14 +246,14 @@ ocamlmktop = "ocamlmktop.opt"
   <term><literal>ldconf</literal></term>
   <listitem><para>
     This variable determines the location of the ld.conf file. This must
-    be the same file the O'Caml compilers read in; it is updated by 
+    be the same file the OCaml compilers read in; it is updated by 
     ocamlfind when installing and removing packages. You can set this
     variable to the special value "<literal>ignore</literal>" to disable
     the automatic modification of the ld.conf file.
   </para>
 
   <para>
-    If not set, the ld.conf file is assumed to reside in the O'Caml
+    If not set, the ld.conf file is assumed to reside in the OCaml
     standard library directory.
   </para>
 

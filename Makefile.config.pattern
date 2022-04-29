@@ -12,7 +12,7 @@ OCAML_CORE_MAN=/usr/local/man
 
 #----------------------------------------------------------------------
 # Type of multi-threading support: either vm or posix
-# (Note: Since O'Caml 3.07, "posix" includes "vm", because a build
+# (Note: Since OCaml 3.07, "posix" includes "vm", because a build
 # supporting posix also supports vm.)
 #----------------------------------------------------------------------
 OCAML_THREADS=vm

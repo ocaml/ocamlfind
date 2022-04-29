@@ -2,7 +2,7 @@
 ocamlfind-mini
 ----------------------------------------------------------------------
 
-ocamlfind-mini is an O'Caml script that implements a subset of the
+ocamlfind-mini is an OCaml script that implements a subset of the
 full functionality of ocamlfind. It consists only of one file, so it
 is easy to distribute it with any software.
 
