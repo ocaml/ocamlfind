@@ -146,7 +146,7 @@ interface-lists:
 package-macosx: all opt
 	mkdir -p package-macosx/root
 	export prefix=`pwd`/package-macosx/root && make install
-	export VERSION=1.1.2 && tools/make-package-macosx
+	export VERSION=1.1.2 && sh tools/make-package-macosx
 
 clean-macosx:
 	sudo rm -rf package-macosx
