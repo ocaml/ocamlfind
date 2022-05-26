@@ -2432,7 +2432,7 @@ let print_configuration() =
   in
 
   let var = ref None in
-  let errmsg = "usage: ocamlfind printconf (conf|path|destdir|metadir|effmetadir|stdlib|ldconf)" in
+  let errmsg = "usage: ocamlfind printconf (conf|path|destdir|metadir|metapath|stdlib|ldconf)" in
 
   parse_args
         []
