@@ -76,7 +76,7 @@ get_lib () {
     # $2...: places to test
     libname="$1"
     while [ "$#" != "0" ]; do
-	if [ -f "$1/lib${libname}.so" -o -f "$1/lib${libname}.a" ]; then
+	if [ -f "$1/lib${libname}.so" ] || [ -f "$1/lib${libname}.a" ]; then
 	    echo "$1"
 	    return 0
 	fi
@@ -301,16 +301,16 @@ d="$ocaml_core_bin"
 while [ "$d" != '/' ]; do
     f=0
     if [ -d "$d/man/man1" ]; then
-	if [ -f "$d/man/man1/ocamlc.1" -o \
-	     -f "$d/man/man1/ocamlc.1.gz" -o \
-	     -f "$d/man/man1/ocamlc.1.Z" ]; then
+	if [ -f "$d/man/man1/ocamlc.1" ] ||
+	   [ -f "$d/man/man1/ocamlc.1.gz" ] ||
+	   [ -f "$d/man/man1/ocamlc.1.Z" ]; then
 	     f=1
 	fi
     else
 	if [ -d "$d/man/mann" ]; then
-	    if [ -f "$d/man/mann/ocamlc.n" -o \
-		 -f "$d/man/mann/ocamlc.n.gz" -o \
-		 -f "$d/man/mann/ocamlc.n.Z" ]; then
+	    if [ -f "$d/man/mann/ocamlc.n" ] ||
+		   [ -f "$d/man/mann/ocamlc.n.gz" ] ||
+		   [ -f "$d/man/mann/ocamlc.n.Z" ]; then
 		f=1
 	    fi
 	fi
@@ -591,9 +591,9 @@ fi
 # (NB. This is always ours, and it doesn't go into generated_META)
 
 req_bytes=""
-if [ -f "${ocaml_core_stdlib}/bytes.cmi" -o \
-     -f "${ocaml_core_stdlib}/stdlib__bytes.cmi" -o \
-     -f "${ocaml_core_stdlib}/stdlib__Bytes.cmi" ]; then
+if [ -f "${ocaml_core_stdlib}/bytes.cmi" ] ||
+   [ -f "${ocaml_core_stdlib}/stdlib__bytes.cmi" ] ||
+   [ -f "${ocaml_core_stdlib}/stdlib__Bytes.cmi" ]; then
     echo "bytes: found, installing fake library"
     lbytes="bytes"
     cbytes=0
@@ -606,7 +606,7 @@ fi
 
 
 if [ $with_toolbox -gt 0 ]; then
-    if [ $have_str -eq 0 -o $have_labltk -eq 0 ]; then
+    if [ $have_str -eq 0 ] || [ $have_labltk -eq 0 ]; then
 	echo "Sorry, toolbox requires str and labltk - omitting toolbox."
         with_toolbox=0
     fi
