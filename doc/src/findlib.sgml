@@ -189,14 +189,14 @@ In the following, we are only analyzing the problem of making and
 using libraries from a purely software-technical point of view. This
 means, we ignore how to make functions polymorphic, and how to create
 functors and classes. Instead, we only look at how to invoke the
-O'Caml compiler to create, manage, and use libraries. Especially, we
+OCaml compiler to create, manage, and use libraries. Especially, we
 are interested in the administration of systems of libraries that
 have dependencies.</para>
 
 <para>
 One of the complex operations on such a system is the replacement of 
 a library by a newer version. Because of the strict compatibility
-checks of O'Caml, it is usually necessary to rebuild and reinstall
+checks of OCaml, it is usually necessary to rebuild and reinstall
 all dependent libraries as well. With the help of findlib, one can
 find out which are the dependent libraries. (However, findlib does
 not provide a framework to rebuild them. For example, the GODI
@@ -1037,7 +1037,7 @@ thread implementation is selected.
 
 <listitem>
 <para>
-autolink: The predicate "autolink" is set if the O'Caml compiler can perform
+autolink: The predicate "autolink" is set if the OCaml compiler can perform
 automatic linking. This predicate is never set if the -noautolink option is
 in effect.
 </para>
@@ -1055,7 +1055,7 @@ in effect.
 <title>Dynamic toploops</title>
 
 <para>
-Recent versions of O'Caml support dynamic loading of stub libraries
+Recent versions of OCaml support dynamic loading of stub libraries
 (but only for the more widely used operating systems). This means
 that one can start a toploop by running
 
@@ -1067,7 +1067,7 @@ $ ocaml
 </programlisting>
 
 and that it is now possible to load .cma archive files referring to
-shared C libraries ("DLLs"). In older versions of O'Caml this was
+shared C libraries ("DLLs"). In older versions of OCaml this was
 not possible and one had to create a so-called custom toploop
 with the ocamlmktop command. This method is still supported and 
 explained below; however, nowadays it is often not necessary to
@@ -2069,14 +2069,14 @@ override the setting in the generated "Makefile".)
 <title>FAQs</title>
 
 <sect1>
-<title>Does findlib support the autolink feature of O'Caml 3?</title>
+<title>Does findlib support the autolink feature of OCaml 3?</title>
 
 <para>
 <emphasis>Short answer:</emphasis> Findlib is compatible with autolink
 </para>
 
 <para>
-The new archive format introduced with O'Caml 3 can store the linker options
+The new archive format introduced with OCaml 3 can store the linker options
 that are necessary to link an archive. For example:
 
 <programlisting>
@@ -2103,7 +2103,7 @@ because findlib should keep the compatibility with older software, and because
 </para>
 
 <para>
-If you have software that must run in both O'Caml 2 and O'Caml 3 environments,
+If you have software that must run in both OCaml 2 and OCaml 3 environments,
 you can make your "linkopts" attribute dependent on the "autolink"
 predicate. For example:
 
@@ -2112,9 +2112,9 @@ linkopts = "-cclib -lmylibrary"
 linkopts(autolink) = ""
 </programlisting>
 
-The findlib installation for O'Caml 3 will take the second line which is
+The findlib installation for OCaml 3 will take the second line which is
 reasonable because ocamlc already knows how to link; the installation for
-O'Caml 2 never sets the "autolink" predicate and therefore uses the first line.
+OCaml 2 never sets the "autolink" predicate and therefore uses the first line.
 </para>
       </sect1>
 
@@ -2331,7 +2331,7 @@ ocamlfind ocamlc -package yourname -syntax variant ...
 	  <title>Example</title>
 
 <para>The package <literal>xstrp4</literal> defines a syntax extension allowing
-$-substitutions in O'Caml strings. Version 1.0 of this package takes advantage
+$-substitutions in OCaml strings. Version 1.0 of this package takes advantage
 from the new camlp4 support of findlib; you may have a look at it for an
 example.</para>
 

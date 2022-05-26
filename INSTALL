@@ -134,7 +134,7 @@ now:
 
 mkdir `ocamlfind printconf destdir`/stublibs
 
-If you do this, you must also tell O'Caml that DLLs can be found in
+If you do this, you must also tell OCaml that DLLs can be found in
 this directory: Add the absolute path of this directory to
 the ld.conf file (type "ocamlfind printconf ldconf" to get the
 location of the ld.conf file). Every line of this text file lists
@@ -172,14 +172,14 @@ Even in cases (2) and (3)! That means use something like
 script, and therefore expects Cygwin input. At the right moment, the
 paths are back-translated to their Windows counterparts.
 
-Until O'Caml 3.08 you must specify whether you have (2) or (3) by
+Until OCaml 3.08 you must specify whether you have (2) or (3) by
 the configure switches
 
 - "-system mingw" for (2)
 - "-system win32" for (3)
 - nothing for (1)
 
-Since O'Caml 3.09 this is no longer necessary because "ocamlc -config"
+Since OCaml 3.09 this is no longer necessary because "ocamlc -config"
 outputs the required information.
 
 In previous versions of Findlib there was a single switch -cygpath 
