@@ -86,7 +86,8 @@ uninstall-doc:
 .PHONY: check-installation
 check-installation:
 	if [ "$(CHECK_BEFORE_INSTALL)" -eq 1 ]; then \
-    for x in camlp4 dbm graphics labltk num ocamlbuild; do \
+    for x in camlp4 dbm graphics labltk num ocamlbuild \
+             dynlink ocamldoc runtime_events stdlib str threads unix compiler-libs; do \
       if [ -f "$(prefix)$(OCAML_SITELIB)/$$x/META" ]; then \
         if ! grep -Fq '[distributed with Ocaml]' "$(prefix)/$(OCAML_SITELIB)/$$x/META"; then \
           rm -f site-lib-src/$$x/META; \
