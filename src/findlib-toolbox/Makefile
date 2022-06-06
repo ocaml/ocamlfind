@@ -13,7 +13,7 @@ make_wizard$(EXEC_SUFFIX): make_wizard.ml
 		unix.cma str.cma labltk.cma findlib.cma make_wizard.ml
 
 install:
-	cp make_wizard$(EXEC_SUFFIX) make_wizard.pattern $(prefix)$(OCAML_SITELIB)/findlib
+	$(INSTALLFILE) make_wizard$(EXEC_SUFFIX) make_wizard.pattern $(DESTDIR)$(prefix)$(OCAML_SITELIB)/findlib/
 
 # uninstall: Nothing to do, because the removal of the findlib core also
 # deinstalls the make_wizard
