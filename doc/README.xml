@@ -109,6 +109,18 @@ configuration files, and library routines in detail.</p>
     <title>List of Changes</title>
     <ul>
 
+      <li>
+        <p><em>1.9.4:</em> Also finds the libraries str.cm(x)a, unix.cm(x)a,
+        and dynlink.cm(x)a in subdirectories of the OCaml standard library,
+        as needed for OCaml-4.14 (David Allsopp).</p>
+        <p>Support for runtime_events (Patrick Ferris)</p>
+        <p>Fix spelling of "OCaml" everywhere (Marek Kubica)</p>
+        <p>Work around the deprecation of a POSIX shell feature
+        (Issam Maghni)</p>
+        <p>Support DESTDIR, and favor the "install" command for installation
+        (Gerd Stolpmann on suggestion of Thomas Klausner)</p>
+      </li>
+
       <li><p><em>1.9.3:</em> Fixes another build problem regarding OCaml-5.00</p></li>
 
       <li><p><em>1.9.2:</em> Fixes a build problem regarding OCaml-5.00</p></li>
