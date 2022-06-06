@@ -2,7 +2,7 @@
 requires = ""
 description = "Unix system calls"
 version = "[distributed with Ocaml]"
-directory = "^"
+directory = "%%unix_dir%%"
 browse_interfaces = "%%interfaces%%"
 archive(byte) = "unix.cma"
 archive(native) = "unix.cmxa"

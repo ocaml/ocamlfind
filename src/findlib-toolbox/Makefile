@@ -9,8 +9,8 @@ opt:
 	true
 
 make_wizard$(EXEC_SUFFIX): make_wizard.ml
-	ocamlc -o make_wizard$(EXEC_SUFFIX) -I +labltk -I ../findlib unix.cma str.cma labltk.cma \
-	 	findlib.cma make_wizard.ml
+	ocamlc -o make_wizard$(EXEC_SUFFIX) -I +unix -I +labltk -I ../findlib \
+		unix.cma str.cma labltk.cma findlib.cma make_wizard.ml
 
 install:
 	cp make_wizard$(EXEC_SUFFIX) make_wizard.pattern $(prefix)$(OCAML_SITELIB)/findlib

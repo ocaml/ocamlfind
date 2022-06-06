@@ -2,7 +2,7 @@
 requires = ""
 version = "[distributed with Ocaml]"
 description = "Dynamic loading and linking of object files"
-directory = "^"
+directory = "%%dynlink_dir%%"
 browse_interfaces = "%%interfaces%%"
 archive(byte) = "dynlink.cma"
 %%natdynlink%%

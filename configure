@@ -372,7 +372,7 @@ if ocamlc -config >/dev/null 2>/dev/null; then
 else
     # Old ocamlc do not have -config.
     rm -f itest-aux/simple
-    ocamlc -w a -custom -thread -o itest-aux/simple unix.cma threads.cma itest-aux/simple_threads.ml \
+    ocamlc -w a -custom -thread -o itest-aux/simple -I +unix unix.cma threads.cma itest-aux/simple_threads.ml \
 	>itest-aux/err.out 2>&1
     output=`cat itest-aux/err.out`
 
@@ -397,7 +397,7 @@ echo "Testing DLLs..."
 
 have_dlls="yes"
 
-ocaml unix.cma itest-aux/simple.ml >/dev/null || have_dlls="no"
+ocaml -I +unix unix.cma itest-aux/simple.ml >/dev/null || have_dlls="no"
 
 ######################################################################
 # Does this version of OCaml support extension points?
@@ -486,7 +486,15 @@ check_library () {
     shift 2
     for file; do
         if [ -e "${ocaml_core_stdlib}/${file}" ]; then
-            echo "${package}: found"
+            package_dir="$(dirname "${file}")"
+            if [ "${package_dir}" = '.' ]; then
+                echo "${package}: found"
+                package_dir='^'
+            else
+                package_dir="+${package_dir}"
+                echo "${package}: found (in ${package_dir})"
+            fi
+            eval "${package}_dir=\"${package_dir}\""
             if [ "$package" = 'num' ]; then
                 generated_META="${generated_META} num num-top"
                 numtop='num-top'
@@ -501,14 +509,15 @@ check_library () {
     return 1
 }
 
-generated_META='dynlink stdlib'
+generated_META='stdlib'
 numtop=''
 
-if ! check_library unix 'possible since 4.08'; then
+if ! check_library unix 'possible since 4.08' unix/unix.cmi unix.cmi; then
     echo "configure: ocamlfind requires OCaml's Unix library" 1>&2
     exit 1
 fi
 
+check_library dynlink '' dynlink/dynlink.cmi dynlink.cmi
 check_library bigarray 'possible since 4.08'
 check_library compiler-libs '' 'compiler-libs'
 check_library dbm 'normal since 4.00'
@@ -518,10 +527,10 @@ check_library ocamlbuild 'normal since 4.03' ocamlbuild/ocamlbuildlib.cma
 check_library ocamldoc '' ocamldoc/odoc.cmi
 check_library raw_spacetime 'normal since 4.12' raw_spacetime_lib.cmxa
 check_library threads '' threads/thread.cmi vmthreads/thread.cmi;
-check_library runtime_events ''
+check_library runtime_events '' runtime_events/runtime_events.cmi
 
 # Need to know if str and labltk are available for the toolbox
-if check_library str 'possible since 4.08'; then
+if check_library str 'possible since 4.08' str/str.cmi str.cmi; then
     have_str=1
 else
     have_str=0
@@ -538,7 +547,7 @@ fi
 have_natdynlink=0
 natdynlink=""
 camlp4_dynlink=""
-if [ -f "${ocaml_core_stdlib}/dynlink.cmxa" ]; then
+if [ -f "${ocaml_core_stdlib}/${dynlink_dir#+}/dynlink.cmxa" ]; then
     have_natdynlink=1
     natdynlink="archive(native) = \"dynlink.cmxa\""
     camlp4_dynlink="dynlink"
@@ -633,6 +642,9 @@ for lib in $generated_META $lbytes; do
         -e "s|%%interfaces%%|${if}|g" \
         -e "s|%%findlib_version%%|${version}|g" \
         -e "s|%%natdynlink%%|${natdynlink}|g" \
+        -e "s|%%dynlink_dir%%|${dynlink_dir}|g" \
+        -e "s|%%unix_dir%%|${unix_dir}|g" \
+        -e "s|%%str_dir%%|${str_dir}|g" \
         site-lib-src/$lib/META.in > site-lib-src/$lib/META
 
     echo "Configuration for $lib written to site-lib-src/$lib/META"
@@ -670,7 +682,7 @@ fi
 # Write Makefile.config
 
 parts="findlib"
-ocamlfind_ocamlflags=""
+ocamlfind_ocamlflags="-I +unix -I +dynlink"
 ocamlfind_archives="findlib.cma unix.cma"
 if [ $with_toolbox -gt 0 ]; then
     parts="$parts findlib-toolbox"
@@ -678,7 +690,7 @@ fi
 if [ $cbytes -gt 0 ]; then
     # bytes first, because findlib needs it
     parts="bytes $parts"
-    ocamlfind_ocamlflags="-I ../bytes"
+    ocamlfind_ocamlflags="${ocamlfind_archives} -I ../bytes"
     ocamlfind_archives="bytes.cma ${ocamlfind_archives}"
 fi
 
@@ -765,3 +777,4 @@ echo
 echo "Configuration has been written to Makefile.config"
 echo
 echo "You can now do 'make all', and optionally 'make opt', to build ocamlfind."
+

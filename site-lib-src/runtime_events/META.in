@@ -2,7 +2,7 @@
 requires = ""
 description = "Runtime events"
 version = "[distributed with OCaml]"
-directory = "^"
+directory = "+runtime_events"
 browse_interfaces = "%%interfaces%%"
 archive(byte) = "runtime_events.cma"
 archive(native) = "runtime_events.cmxa"
