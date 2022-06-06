@@ -725,6 +725,10 @@ if [ "$mingw_lib" != "" ]; then
 fi
 echo "OPAQUE=${opaque}" >>Makefile.config
 echo "CHECK_BEFORE_INSTALL=${check_before_install}" >>Makefile.config
+echo "INSTALLDIR = install -d" >>Makefile.config
+echo "# change to INSTALLDIR = mkdir -p   when BSD install is unavavailable" >>Makefile.config
+echo "INSTALLFILE = install -c" >>Makefile.config
+echo "# change to INSTALLFILE = cp   when BSD install is unavailable" >>Makefile.config
 echo "SITELIB_META=${generated_META}" >Makefile.packages
 
 # All OK

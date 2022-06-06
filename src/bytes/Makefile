@@ -20,12 +20,12 @@ opt:
 	fi
 
 install: all
-	mkdir -p "$(prefix)$(OCAML_SITELIB)/bytes"
-	cp META $(BYTE_FILES) "$(prefix)$(OCAML_SITELIB)/bytes"
-	for f in $(NATIVE_FILES) $(NATIVE_FILES_DYNLINK); do if [ -f "$$f" ]; then cp $$f "$(prefix)$(OCAML_SITELIB)/bytes"; fi; done
+	$(INSTALLDIR) "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/bytes"
+	$(INSTALLFILE) META $(BYTE_FILES) "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/bytes/"
+	for f in $(NATIVE_FILES) $(NATIVE_FILES_DYNLINK); do if [ -f "$$f" ]; then $(INSTALLFILE) $$f "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/bytes/"; fi; done
 
 uninstall: 
-	rm -rf "$(prefix)$(OCAML_SITELIB)/bytes"
+	rm -rf "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/bytes"
 
 # install-self and uninstall-self use ocamlfind already. This is a bit
 # questionable here.
