@@ -7,9 +7,6 @@ include Makefile.config
 -include Makefile.packages
 
 TOP=.
-INSTALLDIR = install -d
-INSTALLFILE = install -c
-export INSTALLDIR INSTALLFILE
 
 .PHONY: all opt install uninstall clean
 
