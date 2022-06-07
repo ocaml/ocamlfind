@@ -496,8 +496,9 @@ check_library () {
                 package_dir="+${package_dir}"
                 echo "${package}: found (in ${package_dir})"
             fi
-            eval "${package}_dir=\"${package_dir}\""
-            eval "${package}_subdir=\"${package_subdir}\""
+            package_key="$(echo "${package}" | tr - _)"
+            eval "${package_key}_dir=\"${package_dir}\""
+            eval "${package_key}_subdir=\"${package_subdir}\""
             if [ "$package" = 'num' ]; then
                 generated_META="${generated_META} num num-top"
                 numtop='num-top'
