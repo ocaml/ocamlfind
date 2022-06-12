@@ -110,6 +110,11 @@ configuration files, and library routines in detail.</p>
     <ul>
 
       <li>
+        <p><em>1.9.5:</em>: fixes a bug in the scripting that
+        slipped into 1.9.4</p>
+      </li>
+
+      <li>
         <p><em>1.9.4:</em> Also finds the libraries str.cm(x)a, unix.cm(x)a,
         and dynlink.cm(x)a in subdirectories of the OCaml standard library,
         as needed for OCaml-4.14 (David Allsopp).</p>
