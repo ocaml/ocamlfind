@@ -489,12 +489,16 @@ check_library () {
             package_dir="$(dirname "${file}")"
             if [ "${package_dir}" = '.' ]; then
                 echo "${package}: found"
+                package_subdir='.'
                 package_dir='^'
             else
+                package_subdir="${package_dir}"
                 package_dir="+${package_dir}"
                 echo "${package}: found (in ${package_dir})"
             fi
-            eval "${package}_dir=\"${package_dir}\""
+            package_key="$(echo "${package}" | tr - _)"
+            eval "${package_key}_dir=\"${package_dir}\""
+            eval "${package_key}_subdir=\"${package_subdir}\""
             if [ "$package" = 'num' ]; then
                 generated_META="${generated_META} num num-top"
                 numtop='num-top'
@@ -547,7 +551,7 @@ fi
 have_natdynlink=0
 natdynlink=""
 camlp4_dynlink=""
-if [ -f "${ocaml_core_stdlib}/${dynlink_dir#+}/dynlink.cmxa" ]; then
+if [ -f "${ocaml_core_stdlib}/${dynlink_subdir}/dynlink.cmxa" ]; then
     have_natdynlink=1
     natdynlink="archive(native) = \"dynlink.cmxa\""
     camlp4_dynlink="dynlink"
