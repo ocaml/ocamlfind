@@ -54,7 +54,8 @@ findlib.conf: findlib.conf.in
 	USE_CYGPATH="$(USE_CYGPATH)"; \
 	export USE_CYGPATH; \
 	cat findlib.conf.in | \
-	    $(SH) tools/patch '@SITELIB@' '$(OCAML_SITELIB)' >findlib.conf
+	    $(SH) tools/patch '@SITELIB@' '$(OCAML_SITELIB)' | \
+			$(SH) tools/patch '@FINDLIB_PATH@' '$(FINDLIB_PATH)' -p >findlib.conf
 	if ./tools/cmd_from_same_dir ocamlc; then \
 		echo 'ocamlc="ocamlc.opt"' >>findlib.conf; \
 	fi

@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# Usage: patch @VARIABLE@ value
+# Usage: patch @VARIABLE@ value [extra-args-for-cygpath]
 # Environment variable USE_CYGPATH is honoured.
 
 varname="$1"
@@ -8,7 +8,7 @@ varvalue="$2"
 
 if [ "${USE_CYGPATH}" = "1" ]; then
     #varvalue="$(echo "$varvalue" | sed -e 's;/;\\;g')"
-    varvalue="$(cygpath -w -l "$varvalue")"
+    varvalue="$(cygpath -w -l $3 "$varvalue")"
     varvalue="$(echo "$varvalue" | sed -e 's;\\;\\\\\\\\;g')"
     # e.g. c:\file is transformed to c:\\\\file
 else

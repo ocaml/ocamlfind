@@ -240,6 +240,7 @@ if [ -z "$system" ]; then
     # - empty means ocamlc does not support -config
 fi
 
+path_sep=':'
 case "$system" in
     mingw|mingw64)
 	if [ "$pure_mingw" = "no" ];  then
@@ -249,6 +250,8 @@ case "$system" in
 	;;
     win32) use_cygpath=1;;
     win64) use_cygpath=1;;
+    # A quirk of history means OCAMLPATH uses ; on Cygwin
+    cygwin) path_sep=';';;
 esac
 
 ######################################################################
@@ -282,6 +285,17 @@ if [ -z "$ocaml_sitelib" ]; then
 	*)		ocaml_sitelib="${ocaml_core_stdlib}/site-lib"
 			;;
     esac
+fi
+
+ocamlpath="${ocaml_sitelib}"
+if [ $ocaml_major -ge 5 ]; then
+    # OCaml 5.0+ installs its own META files under the stdlib directory.
+    # If findlib has been configured -sitelib $(ocamlc -where) then there's
+    # nothing to do, but otherwise we need to put OCaml's Standard Library
+    # into the path setting.
+    if [ ! -e "${ocaml_sitelib}/stdlib/META" ]; then
+        ocamlpath="${ocaml_core_stdlib}${path_sep}${ocamlpath}"
+    fi
 fi
 
 # Find out the directory where ocamlc is:
@@ -710,6 +724,7 @@ echo "OCAML_CORE_STDLIB=${ocaml_core_stdlib}" >>Makefile.config
 echo "OCAML_CORE_BIN=${ocaml_core_bin}" >>Makefile.config
 echo "OCAML_CORE_MAN=${ocaml_core_man}" >>Makefile.config
 echo "OCAML_SITELIB=${ocaml_sitelib}" >>Makefile.config
+echo "FINDLIB_PATH=${ocamlpath}" >>Makefile.config
 echo "OCAML_THREADS=${ocaml_threads}" >>Makefile.config
 echo "OCAMLFIND_BIN=${ocamlfind_bin}" >>Makefile.config
 echo "OCAMLFIND_MAN=${ocamlfind_man}" >>Makefile.config
