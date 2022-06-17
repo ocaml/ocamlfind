@@ -262,6 +262,7 @@ fi
 # Find out standard library location
 
 ocaml_core_stdlib=`get_stdlib`
+ocaml_major="`ocamlc -vnum | cut -f1 -d.`"
 if [ ! -d "$ocaml_core_stdlib" ]; then
    echo "configure: cannot determine ocaml's standard library directory" 1>&2
     exit 1
@@ -425,7 +426,7 @@ ocamlc -opaque >/dev/null 2>/dev/null || opaque=""
 
 check_before_install=0
 findlib_installed_meta=''
-if [ -d "${ocaml_sitelib}" ]; then
+if [ -d "${ocaml_sitelib}" ] && [ ${ocaml_major} -lt 5 ]; then
     previous_config="${ocaml_sitelib}/findlib/Makefile.packages"
     if [ -f "${previous_config}" ]; then
         echo "Querying installation: found list of findlib-generated META files"
@@ -499,6 +500,9 @@ check_library () {
             package_key="$(echo "${package}" | tr - _)"
             eval "${package_key}_dir=\"${package_dir}\""
             eval "${package_key}_subdir=\"${package_subdir}\""
+            if [ ${ocaml_major} -ge 5 ]; then
+                return 0
+            fi
             if [ "$package" = 'num' ]; then
                 generated_META="${generated_META} num num-top"
                 numtop='num-top'
@@ -513,7 +517,11 @@ check_library () {
     return 1
 }
 
-generated_META='stdlib'
+if [ ${ocaml_major} -ge 5 ]; then
+    generated_META=''
+else
+    generated_META='stdlib'
+fi
 numtop=''
 
 if ! check_library unix 'possible since 4.08' unix/unix.cmi unix.cmi; then
