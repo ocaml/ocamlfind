@@ -531,7 +531,6 @@ check_library ocamlbuild 'normal since 4.03' ocamlbuild/ocamlbuildlib.cma
 check_library ocamldoc '' ocamldoc/odoc.cmi
 check_library raw_spacetime 'normal since 4.12' raw_spacetime_lib.cmxa
 check_library threads '' threads/thread.cmi vmthreads/thread.cmi;
-check_library runtime_events '' runtime_events/runtime_events.cmi
 
 # Need to know if str and labltk are available for the toolbox
 if check_library str 'possible since 4.08' str/str.cmi str.cmi; then
