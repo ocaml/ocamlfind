@@ -715,7 +715,7 @@ fi
 if [ $cbytes -gt 0 ]; then
     # bytes first, because findlib needs it
     parts="bytes $parts"
-    ocamlfind_ocamlflags="${ocamlfind_archives} -I ../bytes"
+    ocamlfind_ocamlflags="${ocamlfind_ocamlflags} -I ../bytes"
     ocamlfind_archives="bytes.cma ${ocamlfind_archives}"
 fi
 
