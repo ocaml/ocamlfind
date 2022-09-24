@@ -437,6 +437,14 @@ opaque="-opaque"
 ocamlc -opaque >/dev/null 2>/dev/null || opaque=""
 
 ######################################################################
+# Check for ocamlopt -g
+
+echo "Checking for ocamlopt -g..."
+
+native_debugging_info="-g"
+ocamlopt -g >/dev/null 2>/dev/null || native_debugging_info=""
+
+######################################################################
 # Configure libraries
 
 check_before_install=0
@@ -751,6 +759,7 @@ if [ "$mingw_lib" != "" ]; then
     echo "OCAMLOPT_FLAGS=-I \"${mingw_lib}\"" >>Makefile.config
 fi
 echo "OPAQUE=${opaque}" >>Makefile.config
+echo "OCAMLOPT_G=${native_debugging_info}" >>Makefile.config
 echo "CHECK_BEFORE_INSTALL=${check_before_install}" >>Makefile.config
 echo "INSTALLDIR = install -d" >>Makefile.config
 echo "# change to INSTALLDIR = mkdir -p   when BSD install is unavavailable" >>Makefile.config

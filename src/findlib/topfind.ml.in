@@ -8,7 +8,7 @@ let predicates = ref ("toploop" :: Findlib.recorded_predicates());;
      Findlib, hence we maintain our own list
    *)
 
-let ocaml_stdlib = Lazy.from_fun Findlib.ocaml_stdlib;;
+let ocaml_stdlib = lazy (Findlib.ocaml_stdlib ());;
 let directories = ref [ ] ;;
 
 
@@ -44,7 +44,7 @@ let revised_syntax () = syntax "camlp4r";;
 
 let add_dir d =
   let d = Fl_split.norm_dir d in
-  let lazy ocaml_stdlib = ocaml_stdlib in
+  let ocaml_stdlib = Lazy.force ocaml_stdlib in
   if d <> ocaml_stdlib && not (List.mem d !directories) then begin
     Topdirs.dir_directory d;
     directories := d :: !directories;
