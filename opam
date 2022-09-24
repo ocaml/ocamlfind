@@ -1,6 +1,6 @@
 opam-version: "2.0"
 name: "ocamlfind"
-version: "1.9.5.git"
+version: "1.9.6.git"
 license: "MIT"
 synopsis: "A library manager for OCaml"
 maintainer: "Thomas Gazagnaire <thomas@gazagnaire.org>"
@@ -32,8 +32,5 @@ build: [
 install: [
   [make "install"]
   ["install" "-m" "0755" "ocaml-stub" "%{bin}%/ocaml"] {ocaml:preinstalled}
-]
-depends: [
-  "ocaml" {>= "4.00.0"} # ocamlfind uses String.map
 ]
 depopts: ["graphics"]
