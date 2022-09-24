@@ -8,7 +8,7 @@ let predicates = ref ("toploop" :: Findlib.recorded_predicates());;
      Findlib, hence we maintain our own list
    *)
 
-let ocaml_stdlib = Lazy.from_fun Findlib.ocaml_stdlib;;
+let ocaml_stdlib = lazy (Findlib.ocaml_stdlib ());;
 let directories = ref [ ] ;;
 
 
