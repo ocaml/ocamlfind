@@ -24,6 +24,11 @@ OCAML_THREADS=vm
 OCAML_SITELIB=/usr/local/lib/ocaml/site-lib
 
 #----------------------------------------------------------------------
+# What the path setting will be
+#----------------------------------------------------------------------
+FINDLIB_PATH=/usr/local/lib/ocaml/site-lib:/usr/local/lib/ocaml
+
+#----------------------------------------------------------------------
 # Where binaries and manual pages will be installed
 #----------------------------------------------------------------------
 OCAMLFIND_BIN=/usr/local/bin

@@ -1,2 +1,2 @@
 destdir="@SITELIB@"
-path="@SITELIB@"
+path="@FINDLIB_PATH@"

@@ -240,6 +240,7 @@ if [ -z "$system" ]; then
     # - empty means ocamlc does not support -config
 fi
 
+path_sep=':'
 case "$system" in
     mingw|mingw64)
 	if [ "$pure_mingw" = "no" ];  then
@@ -249,6 +250,8 @@ case "$system" in
 	;;
     win32) use_cygpath=1;;
     win64) use_cygpath=1;;
+    # A quirk of history means OCAMLPATH uses ; on Cygwin
+    cygwin) path_sep=';';;
 esac
 
 ######################################################################
@@ -262,10 +265,12 @@ fi
 # Find out standard library location
 
 ocaml_core_stdlib=`get_stdlib`
+ocaml_major="`ocamlc -vnum 2>/dev/null | cut -f1 -d.`"
 if [ ! -d "$ocaml_core_stdlib" ]; then
    echo "configure: cannot determine ocaml's standard library directory" 1>&2
     exit 1
 fi
+if [ -z "$ocaml_major" ]; then ocaml_major=3; fi
 
 if [ ${use_cygpath} -gt 0 ]; then
     cygpath_to_unix ocaml_core_stdlib
@@ -281,6 +286,17 @@ if [ -z "$ocaml_sitelib" ]; then
 	*)		ocaml_sitelib="${ocaml_core_stdlib}/site-lib"
 			;;
     esac
+fi
+
+ocamlpath="${ocaml_sitelib}"
+if [ $ocaml_major -ge 5 ]; then
+    # OCaml 5.0+ installs its own META files under the stdlib directory.
+    # If findlib has been configured -sitelib $(ocamlc -where) then there's
+    # nothing to do, but otherwise we need to put OCaml's Standard Library
+    # into the path setting.
+    if [ ! -e "${ocaml_sitelib}/stdlib/META" ]; then
+        ocamlpath="${ocaml_core_stdlib}${path_sep}${ocamlpath}"
+    fi
 fi
 
 # Find out the directory where ocamlc is:
@@ -425,7 +441,7 @@ ocamlc -opaque >/dev/null 2>/dev/null || opaque=""
 
 check_before_install=0
 findlib_installed_meta=''
-if [ -d "${ocaml_sitelib}" ]; then
+if [ -d "${ocaml_sitelib}" ] && [ ${ocaml_major} -lt 5 ]; then
     previous_config="${ocaml_sitelib}/findlib/Makefile.packages"
     if [ -f "${previous_config}" ]; then
         echo "Querying installation: found list of findlib-generated META files"
@@ -499,6 +515,9 @@ check_library () {
             package_key="$(echo "${package}" | tr - _)"
             eval "${package_key}_dir=\"${package_dir}\""
             eval "${package_key}_subdir=\"${package_subdir}\""
+            if [ ${ocaml_major} -ge 5 ]; then
+                return 0
+            fi
             if [ "$package" = 'num' ]; then
                 generated_META="${generated_META} num num-top"
                 numtop='num-top'
@@ -513,7 +532,11 @@ check_library () {
     return 1
 }
 
-generated_META='stdlib'
+if [ ${ocaml_major} -ge 5 ]; then
+    generated_META=''
+else
+    generated_META='stdlib'
+fi
 numtop=''
 
 if ! check_library unix 'possible since 4.08' unix/unix.cmi unix.cmi; then
@@ -531,7 +554,6 @@ check_library ocamlbuild 'normal since 4.03' ocamlbuild/ocamlbuildlib.cma
 check_library ocamldoc '' ocamldoc/odoc.cmi
 check_library raw_spacetime 'normal since 4.12' raw_spacetime_lib.cmxa
 check_library threads '' threads/thread.cmi vmthreads/thread.cmi;
-check_library runtime_events '' runtime_events/runtime_events.cmi
 
 # Need to know if str and labltk are available for the toolbox
 if check_library str 'possible since 4.08' str/str.cmi str.cmi; then
@@ -694,7 +716,7 @@ fi
 if [ $cbytes -gt 0 ]; then
     # bytes first, because findlib needs it
     parts="bytes $parts"
-    ocamlfind_ocamlflags="${ocamlfind_archives} -I ../bytes"
+    ocamlfind_ocamlflags="${ocamlfind_ocamlflags} -I ../bytes"
     ocamlfind_archives="bytes.cma ${ocamlfind_archives}"
 fi
 
@@ -703,6 +725,7 @@ echo "OCAML_CORE_STDLIB=${ocaml_core_stdlib}" >>Makefile.config
 echo "OCAML_CORE_BIN=${ocaml_core_bin}" >>Makefile.config
 echo "OCAML_CORE_MAN=${ocaml_core_man}" >>Makefile.config
 echo "OCAML_SITELIB=${ocaml_sitelib}" >>Makefile.config
+echo "FINDLIB_PATH=${ocamlpath}" >>Makefile.config
 echo "OCAML_THREADS=${ocaml_threads}" >>Makefile.config
 echo "OCAMLFIND_BIN=${ocamlfind_bin}" >>Makefile.config
 echo "OCAMLFIND_MAN=${ocamlfind_man}" >>Makefile.config
