@@ -265,11 +265,12 @@ fi
 # Find out standard library location
 
 ocaml_core_stdlib=`get_stdlib`
-ocaml_major="`ocamlc -vnum | cut -f1 -d.`"
+ocaml_major="`ocamlc -vnum 2>/dev/null | cut -f1 -d.`"
 if [ ! -d "$ocaml_core_stdlib" ]; then
    echo "configure: cannot determine ocaml's standard library directory" 1>&2
     exit 1
 fi
+if [ -z "$ocaml_major" ]; then ocaml_major=3; fi
 
 if [ ${use_cygpath} -gt 0 ]; then
     cygpath_to_unix ocaml_core_stdlib
