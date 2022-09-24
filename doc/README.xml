@@ -110,6 +110,14 @@ configuration files, and library routines in detail.</p>
     <ul>
 
       <li>
+        <p><em>1.9.6:</em>: Support for OCaml-5 (as far as foreseeable)
+        (David Allsopp).</p>
+        <p>Again buildable since OCaml-3.08 (David Allsopp).</p>
+        <p>Fix an install problem when building with a system-provided
+          OCaml compiler (Louis Gesbert).</p>
+      </li>
+
+      <li>
         <p><em>1.9.5:</em>: fixes a bug in the scripting that
         slipped into 1.9.4</p>
       </li>
