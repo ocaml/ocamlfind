@@ -33,4 +33,7 @@ install: [
   [make "install"]
   ["install" "-m" "0755" "ocaml-stub" "%{bin}%/ocaml"] {ocaml:preinstalled}
 ]
+depends: [
+  "ocaml" {>= "3.08.0"}
+]
 depopts: ["graphics"]
