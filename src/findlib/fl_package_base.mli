@@ -161,7 +161,7 @@ val packages_in_meta_file :
   (** Parses the META file whose name is [meta_file]. In [name], the
    * name of the main package must be passed. [dir] is the
    * directory associated with the package by default (i.e. before
-   * it is overriden by the "directory" directive).
+   * it is overridden by the "directory" directive).
    *
    * Returns the package records found in this file. The "directory"
    * directive is already applied.

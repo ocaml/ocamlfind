@@ -8,8 +8,8 @@
 open Fl_metatoken
 
 type formal_pred =
-    [ `Pred of string     (** Positive occurence of a formal predicate var *)
-    | `NegPred of string  (** Negative occurence of a formal predicate var *)
+    [ `Pred of string     (** Positive occurrence of a formal predicate var *)
+    | `NegPred of string  (** Negative occurrence of a formal predicate var *)
     ]
 
 type flavour =

@@ -90,7 +90,7 @@ META.name).</para>
 
 <para>The keyword <literal>package</literal> starts the definition
 of a subpackage. There must not be two such definitions with the
-same name. Within the parantheses, the variable assignments and
+same name. Within the parentheses, the variable assignments and
 additions refer to the subpackage. It is allowed that a subpackage
 contains further subpackages.</para>
 
@@ -122,7 +122,7 @@ actually match, and how the details of the value addition look like.</para>
 
 <para> The most specific assignment is selected upon a set of actual
 predicates, i.e. the set of predicates that are assumed to be true.
-The predicates occuring in the definitions of assignments and
+The predicates occurring in the definitions of assignments and
 additions are called formal predicates. They may be positive or
 negative; the latter are prepended by a '-' sign. In order to
 determine the value after the evaluation of the assignments, the
