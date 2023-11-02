@@ -16,7 +16,7 @@ all:
 opt:
 	$(OCAMLOPT) -a -o bytes.cmxa bytes.ml
 	if [ $(HAVE_NATDYNLINK) -gt 0 ]; then \
-	    $(OCAMLOPT) -shared -o bytes.cmxs bytes.cmxa; \
+	    $(OCAMLOPT_SHARED) -shared -o bytes.cmxs bytes.cmxa; \
 	fi
 
 install: all

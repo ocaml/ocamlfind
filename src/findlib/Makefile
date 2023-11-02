@@ -15,6 +15,7 @@ NAME = findlib
 # Need compiler-libs since ocaml-4.00
 OCAMLC = ocamlc -I +compiler-libs
 OCAMLOPT = ocamlopt -I +compiler-libs $(OCAMLOPT_G)
+OCAMLOPT_SHARED = $(OCAMLOPT)
 OCAMLDEP = ocamldep
 OCAMLLEX = ocamllex
 #CAMLP4O =  camlp4 pa_o.cmo pa_op.cmo pr_o.cmo --
@@ -69,13 +70,13 @@ findlib_top.cma: $(TOBJECTS)
 findlib.cmxa: $(XOBJECTS)
 	$(OCAMLOPT) -a -o findlib.cmxa $(XOBJECTS)
 	if [ $(HAVE_NATDYNLINK) -gt 0 ]; then \
-	    $(OCAMLOPT) -shared -o findlib.cmxs $(XOBJECTS); \
+	    $(OCAMLOPT_SHARED) -shared -o findlib.cmxs $(XOBJECTS); \
 	fi
 
 findlib_top.cmxa: $(TXOBJECTS)
 	$(OCAMLOPT) -a -o findlib_top.cmxa $(TXOBJECTS)
 	if [ $(HAVE_NATDYNLINK) -gt 0 ]; then \
-	    $(OCAMLOPT) -shared -o findlib_top.cmxs $(TXOBJECTS); \
+	    $(OCAMLOPT_SHARED) -shared -o findlib_top.cmxs $(TXOBJECTS); \
 	fi
 
 findlib_dynload.cma: $(DYNLOAD_OBJECTS)
@@ -84,7 +85,7 @@ findlib_dynload.cma: $(DYNLOAD_OBJECTS)
 findlib_dynload.cmxa: $(DYNLOAD_XOBJECTS)
 	$(OCAMLOPT) -a -o findlib_dynload.cmxa $(DYNLOAD_XOBJECTS)
 	if [ $(HAVE_NATDYNLINK) -gt 0 ]; then \
-	    $(OCAMLOPT) -shared -o findlib_dynload.cmxs $(DYNLOAD_XOBJECTS); \
+	    $(OCAMLOPT_SHARED) -shared -o findlib_dynload.cmxs $(DYNLOAD_XOBJECTS); \
 	fi
 
 findlib_config.ml: findlib_config.mlp $(TOP)/Makefile.config
