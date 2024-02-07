@@ -66,6 +66,13 @@ PARTS=findlib findlib-toolbox
 INSTALL_TOPFIND=1
 
 #----------------------------------------------------------------------
+# Whether the config and paths are looked up relative to the
+# installation
+#----------------------------------------------------------------------
+RELATIVE_PATHS=0
+RELATIVE_OCAML_SITELIB=$$PREFIX/lib
+
+#----------------------------------------------------------------------
 # Whether make install should update Makefile.packages just before
 # running
 #----------------------------------------------------------------------
