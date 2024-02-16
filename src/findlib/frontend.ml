@@ -856,7 +856,7 @@ let query_package () =
     let eff_packages =
       if !recursive then begin
         if !descendants then
-          Fl_package_base.package_users predicates1 packages1
+          Fl_package_base.package_users ~preds:predicates1 packages1
         else
           package_deep_ancestors predicates1 packages1
       end

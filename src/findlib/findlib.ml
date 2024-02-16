@@ -385,15 +385,15 @@ let package_property predlist pkg propname =
 ;;
 
 
-let package_ancestors predlist pkg =
+let package_ancestors preds pkg =
   lazy_init();
-  Fl_package_base.requires predlist pkg
+  Fl_package_base.requires ~preds pkg
 ;;
 
 
-let package_deep_ancestors predlist pkglist =
+let package_deep_ancestors preds pkglist =
   lazy_init();
-  Fl_package_base.requires_deeply predlist pkglist
+  Fl_package_base.requires_deeply ~preds pkglist
 ;;
 
 
