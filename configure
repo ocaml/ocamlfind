@@ -703,12 +703,10 @@ rm "$tmp"
 
 printf "Detecting compiler arguments: "
 
-( cd tools/extract_args && make ) >ocargs.log 2>&1
-if [ "$?" -eq 0 ]; then
+if make -C tools/extract_args >ocargs.log 2>&1; then
     printf "(extractor built) "
-    tools/extract_args/extract_args -o src/findlib/ocaml_args.ml ocamlc ocamlcp ocamloptp ocamlmklib ocamlmktop ocamlopt ocamldep ocamldoc >>ocargs.log 2>&1
     # ocamlbrowser does not work!
-    if [ $? -eq 0 ]; then
+    if tools/extract_args/extract_args -o src/findlib/ocaml_args.ml ocamlc ocamlcp ocamloptp ocamlmklib ocamlmktop ocamlopt ocamldep ocamldoc >>ocargs.log 2>&1; then
 	echo "ok"
     else
 	echo "FAILED (see the file ocargs.log for details)"
