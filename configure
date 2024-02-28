@@ -688,13 +688,16 @@ for lib in $generated_META $lbytes; do
     echo "Configuration for $lib written to site-lib-src/$lib/META"
 done
 
-while IFS= read -r -d '' part
+tmp="$(mktemp)"
+find src ! -name "$(printf "*\n*")" -name 'META.in' -type f > "$tmp"
+while IFS= read -r part
 do
     out=$(echo "$part" | sed -e "s/\.in\$//")
     sed -e "s/@VERSION@/$version/g" \
         -e "s/@REQUIRES@/${req_bytes}/g" \
         "$part" > "$out"
-done < <(find src -name 'META.in' -type f -print0)
+done < "$tmp"
+rm "$tmp"
 
 ######################################################################
 
