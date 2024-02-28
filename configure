@@ -671,7 +671,7 @@ for lib in $generated_META $lbytes; do
     if [ -f site-lib-src/"$lib"/interfaces.out ]; then
         if=$(cat site-lib-src/"$lib"/interfaces.out)
     fi
-    sed -e "s|%%os%%|${os}|g" \
+    sed \
         -e "s|%%type_of_threads%%|${ocaml_threads}|g" \
         -e "s|%%camlp4_dir%%|${camlp4_dir}|g" \
         -e "s|%%camlp4_version%%|${camlp4_version}|g" \
