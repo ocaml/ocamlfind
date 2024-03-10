@@ -285,7 +285,7 @@ let add_relations s ancestors package_name =
 ;;
 
 
-let add_all_relations predlist s =
+let add_all_relations preds s =
   (* Adds all relations for the packages currently defined in [s].
      Note that missing requirements are not reported immediately (we do
      not know here which part of the graph [s] is really accessed), and
@@ -301,7 +301,7 @@ let add_all_relations predlist s =
     (fun p ->
        let pkg = p.package_name in
        try
-	 let pkg_ancestors = query_requirements predlist pkg in
+	 let pkg_ancestors = query_requirements ~preds pkg in
 	 add_relations s pkg_ancestors pkg
        with
 	 | No_such_package(n,reason) ->
@@ -341,27 +341,27 @@ let fixup_thread_deps s =
 ;;
 
 
-let requires ~preds:predlist package_name =
+let requires ~preds package_name =
   (* returns names of packages required by [package_name], the fully qualified
    * name of the package. It is checked that the packages really exist.
-   * [predlist]: list of true predicates
+   * [preds]: list of true predicates
    * May raise [No_such_package] or [Package_loop].
    *)
-  let ancestors = query_requirements predlist package_name in
+  let ancestors = query_requirements ~preds package_name in
   let store' = Fl_metastore.copy store in     (* work with a copy *)
   add_relations store' ancestors package_name;
-  if List.mem "mt" predlist then fixup_thread_deps store';
+  if List.mem "mt" preds then fixup_thread_deps store';
   ancestors
 ;;
 
 
-let requires_deeply ~preds:predlist package_list =
+let requires_deeply ~preds package_list =
   (* returns names of packages required by the packages in [package_list],
    * either directly or indirectly.
    * It is checked that the packages really exist.
    * The list of names is sorted topologically; first comes the deepest
    * ancestor.
-   * [predlist]: list of true predicates
+   * [preds]: list of true predicates
    * - raises [Not_found] if there is no 'package'
    * - raises [Failure] if some of the ancestors do not exist
    *)
@@ -372,7 +372,7 @@ let requires_deeply ~preds:predlist package_list =
     match pkglist with
       pkg :: pkglist' ->
 	if not(StringSet.mem pkg !pkgset) then begin
-	  let pkg_ancestors = query_requirements predlist pkg in
+	  let pkg_ancestors = query_requirements ~preds pkg in
 	  pkgset := StringSet.add pkg !pkgset;
           query_packages pkg_ancestors
 	end;
@@ -386,8 +386,8 @@ let requires_deeply ~preds:predlist package_list =
 
   (* Now make a copy of the store, and add the relations: *)
   let store' = Fl_metastore.copy store in
-  add_all_relations predlist store';
-  if List.mem "mt" predlist then fixup_thread_deps store';
+  add_all_relations preds store';
+  if List.mem "mt" preds then fixup_thread_deps store';
 
   (* Finally, iterate through the graph. Note that the graph may
    * contain more members than required, so we have to test explicitly
@@ -507,7 +507,7 @@ let package_conflict_report_1 identify_dir () =
        match package_name_comps with
 	   [_] ->
 	     (* pkg is a main package *)
-	     ( let c = package_definitions search_path pkg.package_name in
+	     ( let c = package_definitions ~search_path pkg.package_name in
 	       match c with
 		   []
 		 | [_] ->
