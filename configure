@@ -688,16 +688,12 @@ for lib in $generated_META $lbytes; do
     echo "Configuration for $lib written to site-lib-src/$lib/META"
 done
 
-tmp="$(mktemp)"
-find src ! -name "$(printf "*\n*")" -name 'META.in' -type f > "$tmp"
-while IFS= read -r part
-do
-    out="${part%.in}"
-    sed -e "s/@VERSION@/$version/g" \
-        -e "s/@REQUIRES@/${req_bytes}/g" \
-        "$part" > "$out"
-done < "$tmp"
-rm "$tmp"
+# create META from META.in in POSIX-compatible & safe way
+# see: https://www.shellcheck.net/wiki/SC2044
+meta_subst="sed -e \"s/@VERSION@/$version/g\" \
+	-e \"s/@REQUIRES@/${req_bytes}/g\" \
+	\"\$1\" > \"\${1%.in}\""
+find src -name 'META.in' -type f -exec sh -c "$meta_subst" sh {} \;
 
 ######################################################################
 
