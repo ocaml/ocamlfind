@@ -734,7 +734,7 @@ if [ $cbytes -gt 0 ]; then
 fi
 
 {
-    echo "# Makefile.config written by configure" >Makefile.config
+    echo "# Makefile.config written by configure"
     echo "OCAML_CORE_STDLIB=${ocaml_core_stdlib}"
     echo "OCAML_CORE_BIN=${ocaml_core_bin}"
     echo "OCAML_CORE_MAN=${ocaml_core_man}"
@@ -771,7 +771,7 @@ fi
     echo "# change to INSTALLDIR = mkdir -p   when BSD install is unavavailable"
     echo "INSTALLFILE = install -c"
     echo "# change to INSTALLFILE = cp   when BSD install is unavailable"
-} >> Makefile.config
+} > Makefile.config
 
 echo "SITELIB_META=${generated_META}" >Makefile.packages
 
