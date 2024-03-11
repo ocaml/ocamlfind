@@ -692,7 +692,7 @@ tmp="$(mktemp)"
 find src ! -name "$(printf "*\n*")" -name 'META.in' -type f > "$tmp"
 while IFS= read -r part
 do
-    out=$(echo "$part" | sed -e "s/\.in\$//")
+    out="${part%.in}"
     sed -e "s/@VERSION@/$version/g" \
         -e "s/@REQUIRES@/${req_bytes}/g" \
         "$part" > "$out"
