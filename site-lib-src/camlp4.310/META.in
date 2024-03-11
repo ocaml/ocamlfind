@@ -26,7 +26,7 @@ package "lib" (
 package "gramlib" (
   requires = "camlp4.lib"
   version = "[distributed with Ocaml]"
-  description = "Compatibilty name for camlp4.lib"
+  description = "Compatibility name for camlp4.lib"
 )
 
 # don't use camlp4.lib and camlp4.fulllib together

@@ -1324,7 +1324,7 @@ let enter_name parent followup =
 let buildexec_screen frame =
   add_headline frame "Build Executables";
   add_para frame "You can specify the executables to build in the following \
-way. Press \"New\" and enter the name of the excutable, then add the modules \
+way. Press \"New\" and enter the name of the executable, then add the modules \
 to link in the box that appears. The cma/cmxa archive from the previous \
 screen is linked anyway, so its modules cannot be selected again.";
   add_para frame "Leave the list of executables empty if you do not want to \

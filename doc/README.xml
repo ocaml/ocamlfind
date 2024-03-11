@@ -248,7 +248,7 @@ has an argument (reported by Guillaume Bury)</p>
     </li>
 
     <li>
-      <p><em>1.5.5:</em> fixes a build problem for BSD systens</p>
+      <p><em>1.5.5:</em> fixes a build problem for BSD systems</p>
     </li>
 
     <li>
@@ -508,7 +508,7 @@ the library would not work, and to generate error messages.</p>
 packages.</p>
 
 	<p>The set of predicates is extended by "package predicates"
-after the dependency analysis, making conditions expressable that
+after the dependency analysis, making conditions expressible that
 depend on whether other packages are selected.</p>
 
 	<p>The "+=" operator in META files adds words to variables rather
