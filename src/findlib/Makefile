@@ -118,7 +118,7 @@ num_top.cma: $(NUMTOP_OBJECTS)
 
 clean:
 	rm -f *.cmi *.cmo *.cma *.cmx *.a *.lib *.o *.obj *.cmxa \
-	  fl_meta.ml findlib_config.ml findlib.mml topfind.ml topfind \
+	  fl_meta.ml findlib_config.ml topfind.ml topfind \
 	  ocamlfind$(EXEC_SUFFIX) ocamlfind_opt$(EXEC_SUFFIX)
 
 install: all
@@ -161,14 +161,8 @@ depend: *.ml *.mli fl_meta.ml fl_metascanner.ml findlib_config.ml topfind.ml
 
 # Some 'make' implementations require that .SUFFIXES must occur before
 # the first suffix rule. (E.g. AIX)
-.SUFFIXES: .mll .cmo .cmi .cmx .ml .mli .mml
+.SUFFIXES: .mll .cmo .cmi .cmx .ml .mli
 # .src
-
-.mml.cmo:
-	$(OCAMLC) $(OPAQUE) $(OCAMLC_FLAGS) $(OCAMLFIND_OCAMLFLAGS) -g -vmthread -c -impl $<
-
-.mml.cmx:
-	$(OCAMLOPT) $(OPAQUE) $(OCAMLOPT_FLAGS) $(OCAMLFIND_OCAMLFLAGS) -thread -c -impl $<
 
 .ml.cmx:
 	$(OCAMLOPT) $(OPAQUE) $(OCAMLOPT_FLAGS) $(OCAMLFIND_OCAMLFLAGS) -c $<
