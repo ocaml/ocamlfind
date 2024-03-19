@@ -9,7 +9,7 @@ varvalue="$2"
 if [ "${USE_CYGPATH}" = "1" ]; then
     #varvalue="$(echo "$varvalue" | sed -e 's;/;\\;g')"
     varvalue="$(cygpath -w -l $3 "$varvalue")"
-    varvalue="$(echo "$varvalue" | sed -e 's;\\;\\\\\\\\;g')"
+    varvalue="$(echo "$varvalue" | sed -e 's;\\;\\\\\\\\;g;s/;/\\;/g')"
     # e.g. c:\file is transformed to c:\\\\file
 else
     case `uname` in

@@ -289,6 +289,9 @@ if [ -z "$ocaml_sitelib" ]; then
 fi
 
 ocamlpath="${ocaml_sitelib}"
+if [ ${use_cygpath} -gt 0 ]; then
+    cygpath_to_unix ocamlpath
+fi
 if [ $ocaml_major -ge 5 ]; then
     # OCaml 5.0+ installs its own META files under the stdlib directory.
     # If findlib has been configured -sitelib $(ocamlc -where) then there's
