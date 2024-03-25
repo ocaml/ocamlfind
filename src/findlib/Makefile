@@ -107,11 +107,20 @@ topfind.ml: topfind.ml.in
 			> topfind.ml ;                                   \
 	fi
 
-topfind: topfind_rd$(OCAML_REMOVE_DIRECTORY).p
+topfind.compat.in: topfind.in
+	if [ "$(OCAML_REMOVE_DIRECTORY)" = "1" ]; then                        \
+		cp $< $@;                                                     \
+	else                                                                  \
+		sed -e '/REMOVE_DIRECTORY_BEGIN/,/REMOVE_DIRECTORY_END/ d' $< \
+			> $@ ;                                                \
+	fi
+
+topfind: topfind.compat.in
 	USE_CYGPATH="$(USE_CYGPATH)"; \
 	export USE_CYGPATH; \
-	cat topfind_rd$(OCAML_REMOVE_DIRECTORY).p | \
-	        $(SH) $(TOP)/tools/patch '@SITELIB@' '$(OCAML_SITELIB)' \
+	cat topfind.compat.in | \
+	        $(SH) $(TOP)/tools/patch '@SITELIB@' '$(OCAML_SITELIB)' | \
+	        $(SH) $(TOP)/tools/patch '@RELATIVE_PATHS@' '$(RELATIVE_PATHS)' \
 	    	    >topfind
 
 num_top.cma: $(NUMTOP_OBJECTS)
@@ -119,7 +128,7 @@ num_top.cma: $(NUMTOP_OBJECTS)
 
 clean:
 	rm -f *.cmi *.cmo *.cma *.cmx *.a *.lib *.o *.obj *.cmxa \
-	  fl_meta.ml findlib_config.ml topfind.ml topfind \
+	  fl_meta.ml findlib_config.ml topfind.ml topfind.compat.in topfind \
 	  ocamlfind$(EXEC_SUFFIX) ocamlfind_opt$(EXEC_SUFFIX)
 
 install: all
