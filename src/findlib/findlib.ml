@@ -117,7 +117,7 @@ let auto_config_file() =
     ( try Sys.getenv "OCAMLFIND_CONF" with Not_found -> "") in
   if p = "" then Lazy.force Findlib_config.config_file else p
 
-let relocatable_path path =
+let path_to_relocate path =
   let prefix = "$PREFIX" in
   let len = String.length prefix in
   match String.starts_with ~prefix path with
@@ -127,14 +127,14 @@ let relocatable_path path =
 let relocate_paths paths =
   let paths =
     String.split_on_char Fl_split.path_separator paths
-    |> List.map (fun path ->
-      match relocatable_path path with
-      | None -> path
+    |> List.filter_map (fun path ->
+      match path_to_relocate path with
+      | None -> Some path
       | Some path -> (
         match Lazy.force Findlib_config.location with
         | Some install_location ->
-          Filename.concat install_location path
-        | None -> path))
+          Some (Filename.concat install_location path)
+        | None -> None))
   in
   let sep = String.make 1 Fl_split.path_separator in
   String.concat sep paths
