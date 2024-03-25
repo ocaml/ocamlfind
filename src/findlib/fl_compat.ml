@@ -33,6 +33,13 @@ module List = struct
          | None -> find_map f l
        end
 
+  let rec filter_map f = function
+    | [] -> []
+    | x :: l -> (
+       match f x with
+       | None -> filter_map f l
+       | Some v -> v :: filter_map f l)
+
   include List
 end
 
