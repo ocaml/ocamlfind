@@ -3,6 +3,8 @@
  *
  *)
 
+open Fl_compat
+
 module StrSet = Set.Make(String)
 
 exception No_such_package 
@@ -53,7 +55,7 @@ let init_manually
       ?(ignore_dups_in_list = [])
       ?(stdlib = Findlib_config.ocaml_stdlib)
       ?(ldconf = Findlib_config.ocaml_ldconf)
-      ?(config = Findlib_config.config_file)
+      ?config
       ~install_dir
       ~meta_dir
       ~search_path () =
@@ -67,6 +69,10 @@ let init_manually
 		    `ocamlbrowser, ocamlbrowser_command;
 		    `ocamldoc,   ocamldoc_command;
 		  ];
+  let config = match config with
+    | Some config -> config
+    | None -> Lazy.force Findlib_config.config_file
+  in
   conf_config_file := config;
   conf_search_path := search_path;
   conf_default_location := install_dir;
@@ -109,9 +115,31 @@ let command_names cmd_spec =
 let auto_config_file() =
   let p =
     ( try Sys.getenv "OCAMLFIND_CONF" with Not_found -> "") in
-  if p = "" then Findlib_config.config_file else p
+  if p = "" then Lazy.force Findlib_config.config_file else p
+
+let path_to_relocate path =
+  let prefix = "$PREFIX" in
+  let len = String.length prefix in
+  match String.starts_with ~prefix path with
+  | false -> None
+  | true -> Some (String.sub path len (String.length path - len))
                                                    
-  
+let relocate_paths paths =
+  let paths =
+    String.split_on_char Fl_split.path_separator paths
+    |> List.filter_map (fun path ->
+      match path_to_relocate path with
+      | None -> Some path
+      | Some path -> (
+        match Lazy.force Findlib_config.location with
+        | Some install_location ->
+          Some (Filename.concat install_location path)
+        | None -> None))
+  in
+  let sep = String.make 1 Fl_split.path_separator in
+  String.concat sep paths
+;;
+
 let init
       ?env_ocamlpath ?env_ocamlfind_destdir ?env_ocamlfind_metadir
       ?env_ocamlfind_commands ?env_ocamlfind_ignore_dups_in
@@ -186,6 +214,7 @@ let init
           found := !found || explicit_preds;
 	  try 
             Fl_metascanner.lookup name config_preds vars
+            |> relocate_paths
 	  with Not_found -> default
 	in
         let config_tuple =
