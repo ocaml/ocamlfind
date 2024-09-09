@@ -1077,7 +1077,7 @@ adding a <literal>directory</literal> variable.
 If there are files ending in the suffixes <literal>.so</literal> or
 <literal>.dll</literal>, the package directory will be added to the
 DLL configuration file <literal>ld.conf</literal>, such that the dynamic
-loader can find the DLL. The location of this file can be overriden by
+loader can find the DLL. The location of this file can be overridden by
 the -ldconf option. To turn this feature off, use "-ldconf ignore";
 this causes that the ld.conf file is not modified.
 </para>
@@ -1180,7 +1180,7 @@ file cannot be located. You will get a warning only in this case.
 <para>
 If the package directory is mentioned in the <literal>ld.conf</literal>
 configuration file for DLLs, it will be tried to remove this entry
-from the file. The location of this file can be overriden by
+from the file. The location of this file can be overridden by
 the -ldconf option. To turn this feature off, use "-ldconf ignore";
 this causes that the ld.conf file is not modified.
 </para>

@@ -261,7 +261,7 @@ val reset : unit -&gt; unit
 </programlisting>
 <para>
 This function causes that Topfind forgets that any package has already
-been loaded. Infomation about packages linked into the toploop remain
+been loaded. Information about packages linked into the toploop remain
 intact. The effect of this function is that all dynamically loaded
 packages will be loaded again when <link
 linkend="Topfind.load">load</link>, <link

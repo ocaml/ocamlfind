@@ -71,7 +71,7 @@ let packages_in_meta_file ?(directory_required = false)
   (* Parses the META file whose name is [meta_file]. In [package_name], the
    * name of the main package must be passed. [package_dir] is the
    * directory associated with the package by default (i.e. before
-   * it is overriden by the "directory" directive).
+   * it is overridden by the "directory" directive).
    *
    * directory_required: If true, a "directory" directive is necessary.
    *

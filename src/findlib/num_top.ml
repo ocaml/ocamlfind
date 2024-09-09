@@ -27,6 +27,6 @@ let install_all () =
 let _ =
   if not (install_all ()) then begin
     Format.fprintf error_fmt
-      "Something weird appened while installing Num library printers";
+      "Something weird happened while installing Num library printers";
     Format.pp_print_flush error_fmt ()
   end
