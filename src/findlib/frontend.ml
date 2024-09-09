@@ -1100,7 +1100,8 @@ let ocamlc which () =
 	  predicates := "mt" :: "mt_vm" :: !predicates;
 
       | `POSIX_threads ->
-	  pass_options := !pass_options @ [ "-thread" ];
+          if not Findlib_config.ocaml_has_meta_files then
+	    pass_options := !pass_options @ [ "-thread" ];
 	  predicates := "mt" :: "mt_posix" :: !predicates;
   );
 
@@ -1253,7 +1254,11 @@ let ocamlc which () =
 	tr Sys.remove (Filename.chop_extension initl_file_name ^ ".cmo");
       );
 
-  let exclude_list = [ stdlibdir; threads_dir; vmthreads_dir ] in
+  let exclude_list =
+    if Findlib_config.ocaml_has_meta_files then
+      [ stdlibdir ]
+    else
+      [ stdlibdir; threads_dir; vmthreads_dir ] in
   (* Don't generate -I options for these directories because there is
    * also some magic in ocamlc/ocamlopt that would not work otherwise
    *)
@@ -1311,7 +1316,8 @@ let ocamlc which () =
              else
                [] in
 	   let pkg_dir =
-	     if pkg = "threads" then   (* MAGIC *)
+	     if not Findlib_config.ocaml_has_meta_files && pkg = "threads" then
+	       (* MAGIC for pre-5.x days *)
 	       match !threads with
 		   `None -> stdlibdir
 		 | `VM_threads -> vmthreads_dir

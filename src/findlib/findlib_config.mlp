@@ -3,6 +3,11 @@
  *
  *)
 
+let ocaml_has_meta_files =
+  let ocaml_major =
+    String.sub Sys.ocaml_version 0 (String.index Sys.ocaml_version '.') in
+  int_of_string ocaml_major >= 5;;
+
 let config_file = "@CONFIGFILE@";;
 
 let ocaml_stdlib = "@STDLIB@";;
