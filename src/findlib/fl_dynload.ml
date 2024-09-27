@@ -4,7 +4,7 @@
 
 open Printf
 
-let load_pkg ~debug pkg =
+let load_pkg ~debug ~loadfile pkg =
   if not (Findlib.is_recorded_package pkg) then (
      if debug then
        eprintf "[DEBUG] Fl_dynload: about to load: %s\n%!" pkg;
@@ -34,12 +34,12 @@ let load_pkg ~debug pkg =
      let files = Fl_split.in_words archive in
      if debug then
        eprintf "[DEBUG] Fl_dynload: files=%S\n%!" archive;
-     List.iter 
+     List.iter
        (fun file ->
           if debug then
             eprintf "[DEBUG] Fl_dynload: loading %S\n%!" file;
           let file = Findlib.resolve_path ~base:d file in
-          Dynlink.loadfile file
+          loadfile file
        ) files;
      Findlib.record_package Findlib.Record_load pkg
   )
@@ -48,8 +48,8 @@ let load_pkg ~debug pkg =
       eprintf "[DEBUG] Fl_dynload: not loading: %s\n%!" pkg
 
 
-let load_packages ?(debug=false) pkgs =
+let load_packages ?(debug=false) ?(loadfile=Dynlink.loadfile) pkgs =
   let preds = Findlib.recorded_predicates() in
   let eff_pkglist =
     Findlib.package_deep_ancestors preds pkgs in
-  List.iter (load_pkg ~debug) eff_pkglist
+  List.iter (load_pkg ~debug ~loadfile) eff_pkglist
