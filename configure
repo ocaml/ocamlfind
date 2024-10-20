@@ -437,7 +437,7 @@ ocaml -I +compiler-libs itest-aux/ppx.ml >/dev/null || {
 echo "Checking for ocamlc -opaque..."
 
 opaque="-opaque"
-ocamlc -opaque >/dev/null 2>/dev/null || opaque=""
+ocamlc -opaque -version >/dev/null 2>/dev/null || opaque=""
 
 ######################################################################
 # Check for ocamlopt -g
@@ -445,7 +445,7 @@ ocamlc -opaque >/dev/null 2>/dev/null || opaque=""
 echo "Checking for ocamlopt -g..."
 
 native_debugging_info="-g"
-ocamlopt -g >/dev/null 2>/dev/null || native_debugging_info=""
+ocamlopt -g -version >/dev/null 2>/dev/null || native_debugging_info=""
 
 ######################################################################
 # Configure libraries
