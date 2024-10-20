@@ -181,7 +181,7 @@ feature. Second, modules and functors must be mentioned which not only
 generalize types of values, but can even generalize structures,
 i.e. types with associated operations. Third, the class construct
 allows us to adopt the object-oriented techniques of abstraction such
-as inheritage and dynamic method lookup.
+as inheritance and dynamic method lookup.
 </para>
 
 <para>
@@ -204,7 +204,7 @@ system includes such a framework.)
 </para>
 
 <para>
-The library is also called a "package" when it is seen as a removeable
+The library is also called a "package" when it is seen as a removable
 and replaceable set of files. Findlib requires that there is a 
 certain directory structure; it is not possible to install the files
 at arbitrary places (findlib does not even maintain a file list).
@@ -303,7 +303,7 @@ e.g. instead of calling "ocamlc program.ml" invoke "ocamlfind ocamlc
 -package name_of_package_to_use -linkpkg program.ml", and you can
 refer to the named package within program.ml. If you want to turn your
 collection of modules into a package, you need only to write one
-adminstrative file (META) containing all extra information such as
+administrative file (META) containing all extra information such as
 required other packages.
 </para>
 
@@ -366,7 +366,7 @@ set in ocamlfind.conf)
 
 <para>
 Historically, this kind of query was the first and only way of using
-ocamlfind, and because of the similiarity to the Unix find command it
+ocamlfind, and because of the similarity to the Unix find command it
 got its name. Finding out package locations is a basic but
 nethertheless important feature because it hides the details of the
 filesystem hierarchy. It is sufficient only to know the name of the
@@ -441,7 +441,7 @@ is a short comment on the package.
 <para>The variable "archive" denotes the files that have to be
 actually linked in if the package is used. This is again a list of
 (file) names. In contrast to the other variables, "archive" has a
-condition, written in parantheses. This value of "archive" will only
+condition, written in parentheses. This value of "archive" will only
 be used if the predicate "byte" is true; this predicate is usually
 given if the program is compiled to bytecode. If you have a native
 archive, p.cmxa, of the two modules M1 and M2, you can add another
@@ -518,7 +518,7 @@ ocamlfind query -long-format -predicates byte,native p
 
 <para>
 As both settings for "archive" are now equally like, the extraction
-mechnism chooses simply the first. The general rule is that the first
+mechanism chooses simply the first. The general rule is that the first
 most special value is selected.
 </para>
 </sect1>
@@ -605,7 +605,7 @@ consisting of the single module M3 which contains references to M1 and
 M2. At the first glance, we can ignore this when describing the
 package, as we could always add "-package p" and "-package q" options
 when compiling programs using q. This solution is not optimal, as the
-user of a package must have knowlege about details of the package that
+user of a package must have knowledge about details of the package that
 should normally be hidden. When we introduced the notion of packages,
 one of the most important properties was that we can replace packages
 by improved versions. Imagine that q is replaced by q', but q' uses
@@ -697,7 +697,7 @@ set of packages.
 <para>
 <emphasis>
 Beginning with OCaml 3.00, the compiler itself has an interesting feature
-called "automatic linking" that makes the following mechanism superflous in
+called "automatic linking" that makes the following mechanism superfluous in
 most cases. Automatic linking means that it is possible to store the linker
 options into the cma or cmxa file such that the compiler itself knows which
 options are necessary. Of course, the following mechanism still works, and it
@@ -1170,7 +1170,7 @@ is harmless).
 
 <para>
 Note that such a toploop includes the code of the packages given
-on the commmand line, but that it does not automatically add the
+on the command line, but that it does not automatically add the
 package directories to the search path (in previous versions of
 findlib this was tried, but it never really worked). To do so,
 you still have to #require the packages.
@@ -1324,7 +1324,7 @@ varname ( predname1, predname2, ... ) = "value"
 </programlisting>
 
 <para>
-The names in the parantheses are called <emphasis>formal
+The names in the parentheses are called <emphasis>formal
 predicates</emphasis> and express a condition which must hold such
 that the value on the right side is selected. When querying
 information you can specify a set of <emphasis> actual
@@ -1665,7 +1665,7 @@ package "use_p" (
 )
 </programlisting>
 
-Of couse, the program using both libraries must explicitly enable
+Of course, the program using both libraries must explicitly enable
 the subpackages by mentioning "q.use_p" on the ocamlfind command line,
 otherwise the glue code would be omitted.
 </para>
@@ -2091,7 +2091,7 @@ necessary to link this archive.
 
 <para>
 This means for findlib that most of the "linkopts" attributes in META files
-have become superflous: The compiler itself already knows the linker options,
+have become superfluous: The compiler itself already knows the linker options,
 we do not need to tell the compiler the options. We could simply leave all
 "linkopts" attributes out.
 </para>

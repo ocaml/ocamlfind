@@ -268,7 +268,7 @@ a Makefile is written.
     <p>Findlib is neither a patch of OCaml nor uses it internal features of
 the OCaml programming environment. It is only a convention to install
 software components in filesystem hierarchies, a library interpreting 
-this convention, and some frontend applications making the library useable for
+this convention, and some frontend applications making the library usable for
 you.</p>
 
     <p>One important consequence is that you can only refer to those

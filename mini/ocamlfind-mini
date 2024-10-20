@@ -384,7 +384,7 @@ let ocamlc which () =
      A/a enable/disable all warnings
      C/c enable/disable suspicious comment
      F/f enable/disable partially applied function
-     M/m enable/disable overriden methods
+     M/m enable/disable overridden methods
      P/p enable/disable partial match
      S/s enable/disable non-unit statement
      U/u enable/disable unused match case
