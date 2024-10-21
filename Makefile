@@ -50,11 +50,12 @@ README: doc/README
 .PHONY: all-config
 all-config: findlib.conf
 
-findlib.conf: findlib.conf.in
+.PHONY: findlib-template
+findlib-template: findlib.conf.in
 	USE_CYGPATH="$(USE_CYGPATH)"; \
 	export USE_CYGPATH; \
 	cat findlib.conf.in | \
-	    $(SH) tools/patch '@SITELIB@' '$(OCAML_SITELIB)' | \
+	    $(SH) tools/patch '@SITELIB@' '$(FINDLIB_OCAML_SITELIB)' | \
 			$(SH) tools/patch '@FINDLIB_PATH@' '$(FINDLIB_PATH)' -p >findlib.conf
 	if ./tools/cmd_from_same_dir ocamlc; then \
 		echo 'ocamlc="ocamlc.opt"' >>findlib.conf; \
@@ -67,6 +68,21 @@ findlib.conf: findlib.conf.in
 	fi
 	if ./tools/cmd_from_same_dir ocamldoc; then \
 		echo 'ocamldoc="ocamldoc.opt"' >>findlib.conf; \
+	fi
+
+.PHONY: findlib-relative
+findlib-relative: FINDLIB_OCAML_SITELIB=$(RELATIVE_OCAML_SITELIB)
+findlib-relative: findlib-template
+
+.PHONY: findlib-absolute
+findlib-absolute: FINDLIB_OCAML_SITELIB=$(OCAML_SITELIB)
+findlib-absolute: findlib-template
+
+findlib.conf: findlib.conf.in
+	if [ "$(RELATIVE_PATHS)" = "true" ]; then \
+	  $(MAKE) findlib-relative; \
+        else \
+	  $(MAKE) findlib-absolute; \
 	fi
 
 .PHONY: install-doc

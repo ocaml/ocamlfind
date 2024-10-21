@@ -21,5 +21,6 @@ src/findlib/ocaml_args.ml
 src/findlib/ocamlfind
 src/findlib/topfind
 src/findlib/topfind.ml
+src/findlib/topfind.compat.in
 tools/extract_args/extract_args
 tools/extract_args/extract_args.ml
