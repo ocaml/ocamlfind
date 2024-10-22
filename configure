@@ -584,7 +584,7 @@ fi
 have_natdynlink=0
 natdynlink=""
 camlp4_dynlink=""
-if [ -f "${ocaml_core_stdlib}/${dynlink_subdir}/dynlink.cmxa" ]; then
+if [ -f "${ocaml_core_stdlib}/${dynlink_subdir:?}/dynlink.cmxa" ]; then
     have_natdynlink=1
     natdynlink="archive(native) = \"dynlink.cmxa\""
     camlp4_dynlink="dynlink"
