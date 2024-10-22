@@ -680,9 +680,9 @@ for lib in $generated_META $lbytes; do
         -e "s|%%interfaces%%|${if}|g" \
         -e "s|%%findlib_version%%|${version}|g" \
         -e "s|%%natdynlink%%|${natdynlink}|g" \
-        -e "s|%%dynlink_dir%%|${dynlink_dir}|g" \
-        -e "s|%%unix_dir%%|${unix_dir}|g" \
-        -e "s|%%str_dir%%|${str_dir}|g" \
+        -e "s|%%dynlink_dir%%|${dynlink_dir:?}|g" \
+        -e "s|%%unix_dir%%|${unix_dir:?}|g" \
+        -e "s|%%str_dir%%|${str_dir:?}|g" \
         site-lib-src/"$lib"/META.in > site-lib-src/"$lib"/META
 
     echo "Configuration for $lib written to site-lib-src/$lib/META"
