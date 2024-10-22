@@ -66,7 +66,7 @@ get_path () {
 get_stdlib () {
     # Older versions of ocamlc do not accept -where, so there is a fallback
     # method:
-    ocamlc -where 2>/dev/null | tr -d '\015' || {
+    ocamlc -where 2>/dev/null | tr -d '\r' || {
 	ocamlc -v | sed -n -e "/Standard library directory/s/.*: \(.*\)/\1/p"; }
 }
 
@@ -196,7 +196,7 @@ for tool in sed ocaml ocamlc uname rm make cat dirname basename; do
     fi
 done
 
-lib_suffix=$(ocamlc -config 2>/dev/null | tr -d '\015' | sed -n -e 's/^ext_lib: //p')
+lib_suffix=$(ocamlc -config 2>/dev/null | tr -d '\r' | sed -n -e 's/^ext_lib: //p')
 
 # Check for Cygwin:
 
@@ -230,7 +230,7 @@ use_cygpath=0
 # Whether we have to translate Unix paths to/from Windows paths.
 
 if [ -z "$system" ]; then
-    system=$(ocamlc -config 2>/dev/null | tr -d '\015' | sed -n -e 's/^system: //p')
+    system=$(ocamlc -config 2>/dev/null | tr -d '\r' | sed -n -e 's/^system: //p')
     # This may be
     # - mingw or mingw64
     # - win32
@@ -603,7 +603,7 @@ else
         if is_third_party_META camlp4; then
             echo "camlp4: third-party"
         fi
-        camlp4_dir=$(camlp4 -where | tr -d '\015')
+        camlp4_dir=$(camlp4 -where | tr -d '\r')
         if [ ${use_cygpath} -gt 0 ]; then
             camlp4_dir=$(echo x | env USE_CYGPATH=1 tools/patch x "$camlp4_dir")
             # This makes camlp4_dir a windows path
