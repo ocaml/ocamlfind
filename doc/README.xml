@@ -115,6 +115,15 @@ configuration files, and library routines in detail.</p>
         where we may want to implement a `.cma` -> `.js` cache instead
         of calling `Dynlink.loadfile` dynamically. (Emilio J. Gallego
         Arias).</p>
+        <p>Fix auto-detection of -opaque (Stephen Dolan)</p>
+        <p>Fix linking of threads.cmxa in OCaml-5.2 (David Allsopp)</p>
+        <p>Improved scripts (shellcheck) (Marek Kubica)</p>
+        <p>Support for relocatable installations (Marek Kubica)</p>
+        <p>Support OCAMLOPT_SHARED (Chen Qi)</p>
+        <p>Avoid exception for PATH containing "." (Dmetry Bely)</p>
+        <p>Fixes for Windows (David Allsopp)</p>
+        <p>Typos in documentation (Antonin Décimo)</p>
+        <p>Upgrade ocamlfind for OCaml-5 (David Allsopp)</p>
       </li>
 
       <li>
