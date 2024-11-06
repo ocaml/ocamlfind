@@ -782,6 +782,7 @@ fi
     echo "OPAQUE=${opaque}"
     echo "OCAMLOPT_G=${native_debugging_info}"
     echo "CHECK_BEFORE_INSTALL=${check_before_install}"
+    echo "CP = cp"
     echo "INSTALLDIR = install -d"
     echo "# change to INSTALLDIR = mkdir -p   when BSD install is unavavailable"
     echo "INSTALLFILE = install -c"
