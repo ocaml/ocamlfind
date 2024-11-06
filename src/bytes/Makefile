@@ -21,8 +21,8 @@ opt:
 
 install: all
 	$(INSTALLDIR) "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/bytes"
-	$(INSTALLFILE) META $(BYTE_FILES) "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/bytes/"
-	for f in $(NATIVE_FILES) $(NATIVE_FILES_DYNLINK); do if [ -f "$$f" ]; then $(INSTALLFILE) $$f "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/bytes/"; fi; done
+	$(CP) META $(BYTE_FILES) "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/bytes/"
+	for f in $(NATIVE_FILES) $(NATIVE_FILES_DYNLINK); do if [ -f "$$f" ]; then $(CP) $$f "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/bytes/"; fi; done
 
 uninstall: 
 	rm -rf "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/bytes"

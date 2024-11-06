@@ -88,8 +88,8 @@ findlib.conf: findlib.conf.in
 .PHONY: install-doc
 install-doc:
 	$(INSTALLDIR) "$(DESTDIR)$(prefix)$(OCAMLFIND_MAN)/man1" "$(DESTDIR)$(prefix)$(OCAMLFIND_MAN)/man3" "$(DESTDIR)$(prefix)$(OCAMLFIND_MAN)/man5"
-	-$(INSTALLFILE) doc/ref-man/ocamlfind.1 "$(DESTDIR)$(prefix)$(OCAMLFIND_MAN)/man1"
-	-$(INSTALLFILE) doc/ref-man/META.5 doc/ref-man/site-lib.5 doc/ref-man/findlib.conf.5 "$(DESTDIR)$(prefix)$(OCAMLFIND_MAN)/man5"
+	-$(CP) doc/ref-man/ocamlfind.1 "$(DESTDIR)$(prefix)$(OCAMLFIND_MAN)/man1"
+	-$(CP) doc/ref-man/META.5 doc/ref-man/site-lib.5 doc/ref-man/findlib.conf.5 "$(DESTDIR)$(prefix)$(OCAMLFIND_MAN)/man5"
 
 .PHONY: uninstall-doc
 uninstall-doc:
@@ -119,8 +119,8 @@ check-installation:
 
 .PHONY: install-meta
 install-meta:
-	for x in $(SITELIB_META); do $(INSTALLDIR) "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/$$x"; $(INSTALLFILE) site-lib-src/$$x/META "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/$$x/META.tmp" && mv "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/$$x/META.tmp" "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/$$x/META"; done
-	$(INSTALLDIR) "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/findlib"; $(INSTALLFILE) Makefile.packages "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/findlib/Makefile.packages"
+	for x in $(SITELIB_META); do $(INSTALLDIR) "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/$$x"; $(CP) site-lib-src/$$x/META "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/$$x/META.tmp" && mv "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/$$x/META.tmp" "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/$$x/META"; done
+	$(INSTALLDIR) "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/findlib"; $(CP) Makefile.packages "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/findlib/Makefile.packages"
 
 .PHONY: uninstall-meta
 uninstall-meta:
@@ -130,7 +130,7 @@ uninstall-meta:
 install-config:
 	$(INSTALLDIR) "`dirname \"$(DESTDIR)$(prefix)$(OCAMLFIND_CONF)\"`"
 	@if [ -f "$(DESTDIR)$(prefix)$(OCAMLFIND_CONF)" ]; then echo "!!! Keeping old $(DESTDIR)$(prefix)$(OCAMLFIND_CONF) !!!"; fi
-	test -f "$(DESTDIR)$(prefix)$(OCAMLFIND_CONF)" || $(INSTALLFILE) findlib.conf "$(DESTDIR)$(prefix)$(OCAMLFIND_CONF)"
+	test -f "$(DESTDIR)$(prefix)$(OCAMLFIND_CONF)" || $(CP) findlib.conf "$(DESTDIR)$(prefix)$(OCAMLFIND_CONF)"
 
 .PHONY: uninstall-config
 uninstall-config:
