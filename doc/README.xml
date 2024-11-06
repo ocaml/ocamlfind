@@ -110,6 +110,14 @@ configuration files, and library routines in detail.</p>
     <ul>
 
       <li>
+        <p><em>1.9.7:</em>: Allow overriding low-level module loader
+        in `Fl_dynload.load_packages`. This is very useful in JSOO
+        where we may want to implement a `.cma` -> `.js` cache instead
+        of calling `Dynlink.loadfile` dynamically. (Emilio J. Gallego
+        Arias).</p>
+      </li>
+
+      <li>
         <p><em>1.9.6:</em>: Support for OCaml-5 (as far as foreseeable)
         (David Allsopp).</p>
         <p>Again buildable since OCaml-3.08 (David Allsopp).</p>
