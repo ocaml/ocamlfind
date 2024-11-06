@@ -85,7 +85,7 @@ If the generated META files do not work, edit them (this is very very unlikely).
 Note: The META files are generated from the META.in files in the same
 directories by sed:
 
-	sed -e 's/%%os%%/<os>/g' <more parameters...> site-lib/<name>/META.in
+	sed -e 's/%%findlib_version%%/<version>/g' <more parameters...> site-lib/<name>/META.in
 		>site-lib/<name>/META
 
 You may invoke sed manually to create different META files, but this
