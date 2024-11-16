@@ -502,6 +502,11 @@ check_library () {
         # Library is present - exit code is 0 because the library is found
         # (e.g. detection for Unix) but we don't actually add it to the
         # generated_META list.
+        package_dir="${ocaml_sitelib}/$1"
+        package_subdir="$1"
+        package_key="$(echo "$1" | tr - _)"
+        eval "${package_key}_dir=\"${package_dir}\""
+        eval "${package_key}_subdir=\"${package_subdir}\""
         return 0
     fi
 
