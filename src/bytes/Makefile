@@ -7,6 +7,7 @@ include $(TOP)/Makefile.config
 
 OCAMLC = ocamlc
 OCAMLOPT = ocamlopt $(OCAMLOPT_G)
+OCAMLOPT_SHARED = $(OCAMLOPT)
 
 build: all opt
 
