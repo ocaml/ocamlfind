@@ -111,7 +111,7 @@ configuration files, and library routines in detail.</p>
 
       <li>
         <p><em>1.9.8:</em>: A few build-related fixes.</p>
-      </li
+      </li>
       
       <li>
         <p><em>1.9.7:</em>: Allow overriding low-level module loader
