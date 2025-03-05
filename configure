@@ -741,7 +741,14 @@ if [ $cbytes -gt 0 ]; then
     ocamlfind_archives="bytes.cma ${ocamlfind_archives}"
 fi
 
-relative_site_lib=$(echo "${ocaml_sitelib}" | sed -e "s#^${ocaml_prefix}#\$PREFIX#")
+case "${ocaml_sitelib}" in
+  "${ocaml_prefix}"*)
+    relative_site_lib='$$PREFIX'"${ocaml_sitelib#"${ocaml_prefix}"}"
+    ;;
+  *)
+    relative_site_lib="${ocaml_sitelib}"
+    ;;
+esac
 
 if [ $with_relative_paths -gt 0 ]; then
     # if configured with relative paths we add the relative path to the search path
@@ -772,7 +779,7 @@ fi
     echo "PARTS=${parts}"
     echo "INSTALL_TOPFIND=${with_topfind}"
     echo "RELATIVE_PATHS=${relative_paths}"
-    echo "RELATIVE_OCAML_SITELIB=${relative_site_lib}" | sed -e "s/\\\$/\$\$/"
+    echo "RELATIVE_OCAML_SITELIB=${relative_site_lib}"
     echo "USE_CYGPATH=${use_cygpath}"
     echo "HAVE_NATDYNLINK=${have_natdynlink}"
     echo "VERSION=${version}"
