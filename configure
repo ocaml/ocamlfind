@@ -124,7 +124,6 @@ ocamlfind_config=""
 with_toolbox=0
 with_topfind=1
 with_camlp4=1
-with_relative_paths=0
 custom=-custom
 system=""
 sh=""
@@ -141,7 +140,6 @@ while [ "$#" != "0" ]; do
 	          shift 2
 		  ;;
         -config) ocamlfind_config=$2
-		 with_relative_paths=0
 	         shift 2
 		 ;;
         -no-custom) custom=
@@ -156,10 +154,6 @@ while [ "$#" != "0" ]; do
 	-with-toolbox) with_toolbox=1
 	         shift
 		 ;;
-	-with-relative-paths-at) with_relative_paths=1
-                                 ocaml_prefix=$2
-	                         shift 2
-		                 ;;
 	-no-topfind) with_topfind=0
 	         shift
 		 ;;
@@ -171,21 +165,20 @@ while [ "$#" != "0" ]; do
 		 exit 0
 		 ;;
         -h|-help|--help) echo "usage: configure [options]" 1>&2
-                 echo "  -bindir path                  where binaries are installed" 1>&2
-                 echo "  -mandir path                  where manual pages are installed" 1>&2
-                 echo "  -sitelib path                 set the location of the site-specific packages" 1>&2
-                 echo "  -config path                  set the location of the configuration file" 1>&2
-                 echo "  -no-custom                    don't link in custom runtime mode" 1>&2
-                 echo "  -system <systype>             override system type (esp. mingw and win32)" 1>&2
-                 echo "  -with-toolbox                 also build the toolbox" 1>&2
-                 echo "  -with-relative-paths-at path  load configuration relative to the installation path" 1>&2
-                 echo "  -no-topfind                   don't install topfind script into stdlib directory" 1>&2
-                 echo "  -no-camlp4                    don't install the camlp4 META file" 1>&2
-                 exit
-                 ;;
-         *)      echo "configure: run 'configure -h' to get help" 1>&2
-                 exit 1
-                 ;;
+		  echo "  -bindir path         where binaries are installed" 1>&2
+		  echo "  -mandir path         where manual pages are installed" 1>&2
+		  echo "  -sitelib path        set the location of the site-specific packages" 1>&2
+                  echo "  -config path         set the location of the configuration file" 1>&2
+                  echo "  -no-custom           don't link in custom runtime mode" 1>&2
+		  echo "  -system <systype>    override system type (esp. mingw and win32)" 1>&2
+		  echo "  -with-toolbox        also build the toolbox" 1>&2
+		  echo "  -no-topfind          don't install topfind script into stdlib directory" 1>&2
+		  echo "  -no-camlp4           don't install the camlp4 META file" 1>&2
+		  exit
+		  ;;
+         *)       echo "configure: run 'configure -h' to get help" 1>&2
+		  exit 1
+		  ;;
     esac
 done
 
@@ -843,16 +836,6 @@ fi
 ######################################################################
 # Write Makefile.config
 
-relative_site_lib=$(echo "${ocaml_sitelib}" | sed -e "s#^${ocaml_prefix}#\$PREFIX#")
-
-if [ $with_relative_paths -gt 0 ]; then
-    # if configured with relative paths we add the relative path to the search path
-    relative_paths="true"
-    ocamlpath="${relative_site_lib}${path_sep}${ocamlpath}"
-else
-    relative_paths="false"
-fi
-
 srcdir_abs="$PWD"
 if [ ${use_cygpath} -gt 0 ]; then
     srcdir_abs="$(LC_ALL=C.UTF-8 cygpath -w -- "$srcdir_abs")"
@@ -881,7 +864,6 @@ fi
     echo "CUSTOM=${custom}"
     echo "PARTS=${parts}"
     echo "INSTALL_TOPFIND=${with_topfind}"
-    echo "RELATIVE_PATHS=${relative_paths}"
     echo "HAVE_NATDYNLINK=${have_natdynlink}"
     echo "IS_RELOCATABLE=${relocatable_findlib}"
     echo "RELOCATABLE=${relocatable_ocaml_flag}"
@@ -901,11 +883,7 @@ fi
     echo "# change to INSTALLFILE = cp   when BSD install is unavailable"
 } > Makefile.config
 {
-    if [ $with_relative_paths -gt 0 ]; then
-	echo "destdir=\"$(echo "${relative_site_lib}" | sed -e 's;\\;\\\\;g')\""
-    else
-	echo "destdir=\"$(echo "${ocaml_sitelib_native}" | sed -e 's;\\;\\\\;g')\""
-    fi
+    echo "destdir=\"$(echo "${ocaml_sitelib_native}" | sed -e 's;\\;\\\\;g')\""
     echo "path=\"$(echo "$ocamlpath" | sed -e 's;\\;\\\\;g')\""
 } > findlib.conf.in
 echo "SITELIB_META=${generated_META}" >Makefile.packages
