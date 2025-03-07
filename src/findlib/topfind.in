@@ -89,6 +89,14 @@ let rec try_vars = function
       | Some _ as found -> found))
 in
 
+let sitelib_directory = "@SITELIB@" in
+rx:let module Defs = struct
+rx:  external standard_library_default : unit -> string = "%standard_library_default"
+rx:  external stdlib_dirs : string -> string * string option = "caml_sys_get_stdlib_dirs"
+rx:end in
+rx:let stdlib, _ = Defs.stdlib_dirs (Defs.standard_library_default ()) in
+rx:let sitelib_directory = Filename.concat stdlib sitelib_directory in
+
 let location =
   match try_vars [
     ("OPAM_SWITCH_PREFIX", install_dir_from_opam_switch_prefix);
@@ -96,12 +104,12 @@ let location =
     ("OCAML_TOPLEVEL_PATH", install_dir_from_ocaml_toplevel_path);
   ] with
   | Some location -> location
-  | None -> "@SITELIB@"
+  | None -> sitelib_directory
 in
 
 let findlib_directory = match @RELATIVE_PATHS@ with
   | true -> location / "lib" / "findlib"
-  | false -> "@SITELIB@" / "findlib"
+  | false -> sitelib_directory / "findlib"
 in
 
 let () = Topdirs.dir_directory findlib_directory in

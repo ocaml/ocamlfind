@@ -52,11 +52,13 @@ num-top: num_top.cma
 
 ocamlfind$(EXEC_SUFFIX): findlib.cma $(OCAMLFIND_OBJECTS)
 	$(OCAMLC) $(CUSTOM) -o ocamlfind$(EXEC_SUFFIX) -g $(OCAMLFIND_ARCHIVES) \
-	          $(OCAMLC_FLAGS) $(OCAMLFIND_OCAMLFLAGS) $(OCAMLFIND_OBJECTS)
+	          $(OCAMLC_FLAGS) $(OCAMLFIND_OCAMLFLAGS) $(RELOCATABLE) \
+	          $(OCAMLFIND_OBJECTS)
 
 ocamlfind_opt$(EXEC_SUFFIX): findlib.cmxa $(OCAMLFIND_XOBJECTS)
 	$(OCAMLOPT) -o ocamlfind_opt$(EXEC_SUFFIX) $(OCAMLFIND_XARCHIVES) \
-		  $(OCAMLOPT_FLAGS) $(OCAMLFIND_OCAMLFLAGS) $(OCAMLFIND_XOBJECTS)
+	    $(OCAMLOPT_FLAGS) $(OCAMLFIND_OCAMLFLAGS) $(RELOCATABLE) \
+	    $(OCAMLFIND_XOBJECTS)
 
 test_parser$(EXEC_SUFFIX): fl_metascanner.cmx test_parser.cmx fl_metatoken.cmx fl_meta.cmx
 	$(OCAMLOPT) -o test_parser$(EXEC_SUFFIX) fl_meta.cmx fl_metatoken.cmx fl_metascanner.cmx test_parser.cmx
@@ -88,13 +90,21 @@ findlib_dynload.cmxa: $(DYNLOAD_XOBJECTS)
 	    $(OCAMLOPT_SHARED) -shared -o findlib_dynload.cmxs $(DYNLOAD_XOBJECTS); \
 	fi
 
-findlib_config.ml: findlib_config.mlp $(TOP)/Makefile.config
-	cat findlib_config.mlp | \
+findlib_config_0.mlp: findlib_config.mlp
+	sed -e '/^rx:/d;s/^ax://g' $< > $@
+
+findlib_config_1.mlp: findlib_config.mlp
+	sed -e '/^ax:/d;s/^rx://g' $< > $@
+
+findlib_config.ml: findlib_config_$(IS_RELOCATABLE).mlp $(TOP)/Makefile.config
+	cat $< | \
 	        $(SH) $(TOP)/tools/patch '@CONFIGFILE@' '$(OCAMLFIND_CONF_NATIVE)' | \
+	        $(SH) $(TOP)/tools/patch '@CONFIGFILENAME@' '$(OCAMLFIND_CONF_NAME)' | \
 	        $(SH) $(TOP)/tools/patch '@STDLIB@' '$(OCAML_CORE_STDLIB_NATIVE)' | \
 	        $(SH) $(TOP)/tools/patch '@RELATIVE_PATHS@' '$(RELATIVE_PATHS)' | \
 		sed -e 's;@AUTOLINK@;$(OCAML_AUTOLINK);g' \
 		    -e 's;@SYSTEM@;$(SYSTEM);g' \
+	      -e 's;@CONFIG_FROM_STDLIB@;$(CONFIG_FROM_STDLIB);g' \
 		     >findlib_config.ml
 
 topfind.ml: topfind.ml.in
@@ -105,15 +115,18 @@ topfind.ml: topfind.ml.in
 			> topfind.ml ;                                   \
 	fi
 
-topfind_0.p: topfind.in
-	sed -e '/^4x:/d' $< > $@
+topfind_00.p: topfind.in
+	sed -e '/^[4r]x:/d' $< > $@
 
-topfind_1.p: topfind.in
-	sed -e 's/^4x://' $< > $@
+topfind_10.p: topfind.in
+	sed -e 's/^4x://;/^rx:/d' $< > $@
 
-topfind: topfind_$(OCAML_REMOVE_DIRECTORY).p
+topfind_11.p: topfind.in
+	sed -e 's/^[4r]x://' $< > $@
+
+topfind: topfind_$(OCAML_REMOVE_DIRECTORY)$(IS_RELOCATABLE).p $(TOP)/Makefile.config
 	cat $< | \
-	        $(SH) $(TOP)/tools/patch '@SITELIB@' '$(OCAML_SITELIB_NATIVE)' | \
+	        $(SH) $(TOP)/tools/patch '@SITELIB@' '$(OCAML_SITELIB_FROM_STDLIB)' | \
 	        $(SH) $(TOP)/tools/patch '@RELATIVE_PATHS@' '$(RELATIVE_PATHS)' \
 	    	    >topfind
 
@@ -122,7 +135,8 @@ num_top.cma: $(NUMTOP_OBJECTS)
 
 clean:
 	rm -f *.cmi *.cmo *.cma *.cmx *.a *.lib *.o *.obj *.cmxa \
-	  fl_meta.ml findlib_config.ml topfind.ml topfind_?.p topfind \
+	  fl_meta.ml findlib_config.ml findlib_config_?.mlp \
+	  topfind.ml topfind_??.p topfind \
 	  ocamlfind$(EXEC_SUFFIX) ocamlfind_opt$(EXEC_SUFFIX)
 
 install: all

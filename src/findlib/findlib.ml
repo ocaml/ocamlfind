@@ -217,11 +217,28 @@ let init
             |> relocate_paths
 	  with Not_found -> default
 	in
-        let convert_relative def =
-          if Filename.is_relative def && not (Filename.is_implicit def) then
-            Filename.concat (Filename.dirname config_file) def
+        let convert_relative path =
+          let path_dirname = Filename.dirname path in
+          if path_dirname = Filename.current_dir_name &&
+             Filename.basename path = Filename.current_dir_name then
+            (* path = "." || path = "./" *)
+            Filename.dirname config_file
+          else if path_dirname = Filename.current_dir_name &&
+                  not (Filename.is_implicit path) then
+            (* path = "./*" *)
+            let rec split acc dir =
+              let dirname = Filename.dirname dir in
+              let basename = Filename.basename dir in
+              if dirname = Filename.current_dir_name then
+                List.fold_left Filename.concat "" (basename :: acc)
+              else
+                split (Filename.basename dir :: acc) dirname in
+            Filename.concat (Filename.dirname config_file) (split [] path)
+          else if path = Filename.parent_dir_name ||
+                  Filename.is_relative path && not (Filename.is_implicit path) then
+            Filename.concat (Filename.dirname config_file) path
           else
-            def in
+            path in
         let lookup_path name default =
           let value = Fl_split.path (lookup name default) in
           List.map convert_relative value in

@@ -52,7 +52,20 @@ let install_dir_from_opam_switch_prefix path =
   | false -> None
   | true -> Some path
 
-let default = "@CONFIGFILE@"
+ax:let ocaml_stdlib = "@STDLIB@";;
+
+rx:let ocaml_stdlib =
+rx:  let module Defs = struct
+rx:    external standard_library_default : unit -> string = "%standard_library_default"
+rx:    external stdlib_dirs : string -> string * string option = "caml_sys_get_stdlib_dirs"
+rx:  end in
+rx:  fst (Defs.stdlib_dirs (Defs.standard_library_default ()));;
+
+ax:let default = "@CONFIGFILE@";;
+rx:let default =
+rx:  let config_dir_from_stdlib = @CONFIG_FROM_STDLIB@ in
+rx:  Filename.concat (config_dir_from_stdlib ocaml_stdlib) "@CONFIGFILENAME@";;
+
 let fallback = Option.value ~default
 
 let rec try_vars = function
@@ -93,8 +106,6 @@ let ocaml_has_meta_files =
   let ocaml_major =
     String.sub Sys.ocaml_version 0 (String.index Sys.ocaml_version '.') in
   int_of_string ocaml_major >= 5;;
-
-let ocaml_stdlib = "@STDLIB@";;
 
 let ocaml_ldconf = ocaml_stdlib / "ld.conf";;
 

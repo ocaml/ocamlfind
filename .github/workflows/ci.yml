@@ -44,7 +44,7 @@ jobs:
 
       - name: Build with make
         run: |
-          opam exec -- ${{ runner.os == 'Windows' && 'sh ' || '' }}./configure
+          opam exec -- ${{ runner.os == 'Windows' && 'sh ' || '' }}./configure -sitelib .
           echo ------------
           grep "[\\\\/]" Makefile.config
           echo ------------
