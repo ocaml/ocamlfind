@@ -217,6 +217,15 @@ let init
             |> relocate_paths
 	  with Not_found -> default
 	in
+        let convert_relative def =
+          if Filename.is_relative def && not (Filename.is_implicit def) then
+            Filename.concat (Filename.dirname config_file) def
+          else
+            def in
+        let lookup_path name default =
+          let value = Fl_split.path (lookup name default) in
+          List.map convert_relative value in
+        let lookup name default = convert_relative (lookup name default) in
         let config_tuple =
 	  ( (lookup "ocamlc" ocamlc_default),
 	    (lookup "ocamlopt" ocamlopt_default),
@@ -227,7 +236,7 @@ let init
 	    (lookup "ocamldep" ocamldep_default),
 	    (lookup "ocamlbrowser" ocamlbrowser_default),
 	    (lookup "ocamldoc" ocamldoc_default),
-	    Fl_split.path (lookup "path" ""),
+            (lookup_path "path" ""),
 	    (lookup "destdir" ""),
 	    (lookup "metadir" "none"),
 	    (lookup "stdlib" Findlib_config.ocaml_stdlib),
