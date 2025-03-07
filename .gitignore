@@ -8,6 +8,7 @@
 *.cmxs
 *.a
 *.so
+*.exe
 META
 
 Makefile.config
