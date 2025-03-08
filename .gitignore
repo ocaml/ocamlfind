@@ -23,6 +23,7 @@ src/findlib/fl_meta.ml
 src/findlib/ocaml_args.ml
 src/findlib/ocamlfind
 src/findlib/ocamlfind_opt
+src/findlib/realpath.ml
 src/findlib/topfind
 src/findlib/topfind.ml
 src/findlib/topfind_??.p

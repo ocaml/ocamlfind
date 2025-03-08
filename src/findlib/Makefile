@@ -30,7 +30,7 @@ TOBJECTS       = topfind.cmo
 XOBJECTS       = $(OBJECTS:.cmo=.cmx)
 TXOBJECTS      = $(TOBJECTS:.cmo=.cmx)
 
-OCAMLFIND_OBJECTS = ocaml_args.cmo frontend.cmo
+OCAMLFIND_OBJECTS = ocaml_args.cmo realpath.cmo frontend.cmo
 OCAMLFIND_XOBJECTS = $(OCAMLFIND_OBJECTS:.cmo=.cmx)
 
 # OCAMLFIND_ARCHIVES: set in Makefile.config
@@ -107,6 +107,9 @@ findlib_config.ml: findlib_config_$(IS_RELOCATABLE).mlp $(TOP)/Makefile.config
 	      -e 's;@CONFIG_FROM_STDLIB@;$(CONFIG_FROM_STDLIB);g' \
 		     >findlib_config.ml
 
+realpath.ml: $(TOP)/Makefile.config
+	echo 'let realpath = $(REALPATH)' > $@
+
 topfind.ml: topfind.ml.in
 	if [ "$(ENABLE_TOPFIND_PPXOPT)" = "true" ]; then                 \
 		cp topfind.ml.in topfind.ml;                             \
@@ -135,7 +138,7 @@ num_top.cma: $(NUMTOP_OBJECTS)
 
 clean:
 	rm -f *.cmi *.cmo *.cma *.cmx *.a *.lib *.o *.obj *.cmxa \
-	  fl_meta.ml findlib_config.ml findlib_config_?.mlp \
+	  fl_meta.ml findlib_config.ml findlib_config_?.mlp realpath.ml \
 	  topfind.ml topfind_??.p topfind \
 	  ocamlfind$(EXEC_SUFFIX) ocamlfind_opt$(EXEC_SUFFIX)
 

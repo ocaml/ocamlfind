@@ -2206,11 +2206,14 @@ let install_package () =
        filesystems. So some better check would be nice.
      *)
     let lines = read_ldconf !ldconf in
-    let dlldir_norm = Fl_split.norm_dir dlldir in
+    let dlldir_real = Realpath.realpath dlldir in
+    let dlldir_norm = Fl_split.norm_dir dlldir_real in
     let dlldir_norm_lc = string_lowercase_ascii dlldir_norm in
     let ci_filesys = (Sys.os_type = "Win32") in
     let check_dir d =
+      let d_real = try Realpath.realpath d.eff with Unix.Unix_error _ -> "" in
       let d' = Fl_split.norm_dir d.eff in
+      (d_real = dlldir_real) ||
       (d' = dlldir_norm) || 
         (ci_filesys && string_lowercase_ascii d' = dlldir_norm_lc) in
     if not (List.exists check_dir lines) then

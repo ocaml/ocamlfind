@@ -469,6 +469,21 @@ have_remdir=1
 ocaml itest-aux/remdir.ml >/dev/null 2>/dev/null || have_remdir=0
 
 ######################################################################
+# do we have Unix.realpath?
+
+printf "Checking for Unix.realpath... "
+have_realpath=1
+ocamlc -I +unix -c itest-aux/realpath.ml >/dev/null 2>/dev/null || have_realpath=0
+rm -f itest-aux/realpath.cmi itest-aux/realpath.cmo
+if [ $have_realpath -eq 1 ] && [ $relocatable_findlib -eq 1 ]; then
+  realpath_function='Unix.realpath'
+  echo "yes"
+else
+  realpath_function='fun p -> p'
+  echo "no"
+fi
+
+######################################################################
 # Test the threading model
 
 echo "Testing threading model..."
@@ -869,6 +884,7 @@ fi
     echo "SYSTEM=${system}"
     echo "NUMTOP=${numtop}"
     echo "SH=${sh}"
+    echo "REALPATH=${realpath_function}"
     echo "OPAQUE=${opaque}"
     echo "OCAMLOPT_G=${native_debugging_info}"
     echo "CHECK_BEFORE_INSTALL=${check_before_install}"
