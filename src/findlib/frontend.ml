@@ -231,7 +231,7 @@ let write_ldconf filename lines new_lines =
   try
     List.iter
       (fun line -> output_string f (line ^ "\n"))
-      (lines @ new_lines);
+      (List.map (fun {raw = line; eff = _} -> line) lines @ new_lines);
     close_out f;
     prerr_endline("Updated " ^ filename);
   with
@@ -286,7 +286,7 @@ let conflict_report incpath pkglist =
     let dll_pairs =
       List.flatten
 	(List.map
-	   (fun dll_dir ->
+           (fun {eff = dll_dir; raw = _} ->
 	      let files =
 		try Array.to_list (Sys.readdir dll_dir)
 		with _ ->
@@ -2210,7 +2210,7 @@ let install_package () =
     let dlldir_norm_lc = string_lowercase_ascii dlldir_norm in
     let ci_filesys = (Sys.os_type = "Win32") in
     let check_dir d =
-      let d' = Fl_split.norm_dir d in
+      let d' = Fl_split.norm_dir d.eff in
       (d' = dlldir_norm) || 
         (ci_filesys && string_lowercase_ascii d' = dlldir_norm_lc) in
     if not (List.exists check_dir lines) then
@@ -2378,9 +2378,9 @@ let remove_package () =
         begin
           let lines = read_ldconf !ldconf in
           let d = Fl_split.norm_dir pkgdir in
-          let exists = List.exists (fun p -> Fl_split.norm_dir p = d) lines in
+          let exists = List.exists (fun p -> Fl_split.norm_dir p.eff = d) lines in
           if exists then begin
-            let lines' = List.filter (fun p -> Fl_split.norm_dir p <> d) lines in
+            let lines' = List.filter (fun p -> Fl_split.norm_dir p.eff <> d) lines in
             write_ldconf !ldconf lines' []
           end
         end

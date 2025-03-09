@@ -577,14 +577,28 @@ let record_package_predicates preds =
 let recorded_predicates() =
   !rec_preds
 
+type ldconf_entry = {raw: string; eff: string}
 let read_ldconf filename =
   let lines = ref [] in
+  let ldconf_dir = Filename.dirname filename in
   let f = open_in filename in
   try
     while true do
       let line = input_line f in
       if line <> "" then
-	lines := line :: !lines
+        (* "Explicit-relative" lines should be interpreted relative to ld.conf
+           since OCaml 5.4. The interpretation of non-absolute lines in ld.conf
+           prior to OCaml 5.4 was not useful, so this behaviour is done without
+           a version check (which means it also works for the backports of
+           Relocatable OCaml, which include this change). *)
+        let eff =
+          if line = Filename.current_dir_name ||
+             line = Filename.parent_dir_name ||
+             Filename.is_relative line && not (Filename.is_implicit line) then
+            Filename.concat ldconf_dir line
+          else
+            line in
+        lines := {raw = line; eff = eff} :: !lines
     done;
     assert false
   with
