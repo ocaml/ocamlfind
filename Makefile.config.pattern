@@ -7,8 +7,6 @@
 # Where the OCAML core is installed:
 #----------------------------------------------------------------------
 OCAML_CORE_STDLIB=/usr/local/lib/ocaml
-OCAML_CORE_BIN=/usr/local/bin
-OCAML_CORE_MAN=/usr/local/man
 
 #----------------------------------------------------------------------
 # Type of multi-threading support: either vm or posix
