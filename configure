@@ -754,8 +754,6 @@ fi
 {
     echo "# Makefile.config written by configure"
     echo "OCAML_CORE_STDLIB=${ocaml_core_stdlib}"
-    echo "OCAML_CORE_BIN=${ocaml_core_bin}"
-    echo "OCAML_CORE_MAN=${ocaml_core_man}"
     echo "OCAML_SITELIB=${ocaml_sitelib}"
     echo "FINDLIB_PATH=${ocamlpath}"
     echo "OCAML_THREADS=${ocaml_threads}"
