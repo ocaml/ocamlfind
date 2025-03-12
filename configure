@@ -3,6 +3,8 @@
 # ----------------------------------------------------------------------
 #
 
+set -e
+
 # Some functions
 
 #set -x
@@ -567,16 +569,16 @@ if ! check_library unix 'possible since 4.08' unix/unix.cmi unix.cmi; then
     exit 1
 fi
 
-check_library dynlink '' dynlink/dynlink.cmi dynlink.cmi
-check_library bigarray 'possible since 4.08'
-check_library compiler-libs '' 'compiler-libs'
-check_library dbm 'normal since 4.00'
-check_library graphics 'normal since 4.09'
-check_library num 'normal since 4.06'
-check_library ocamlbuild 'normal since 4.03' ocamlbuild/ocamlbuildlib.cma
-check_library ocamldoc '' ocamldoc/odoc.cmi
-check_library raw_spacetime 'normal since 4.12' raw_spacetime_lib.cmxa
-check_library threads '' threads/thread.cmi vmthreads/thread.cmi;
+check_library dynlink '' dynlink/dynlink.cmi dynlink.cmi || true
+check_library bigarray 'possible since 4.08' || true
+check_library compiler-libs '' 'compiler-libs' || true
+check_library dbm 'normal since 4.00' || true
+check_library graphics 'normal since 4.09' || true
+check_library num 'normal since 4.06' || true
+check_library ocamlbuild 'normal since 4.03' ocamlbuild/ocamlbuildlib.cma || true
+check_library ocamldoc '' ocamldoc/odoc.cmi || true
+check_library raw_spacetime 'normal since 4.12' raw_spacetime_lib.cmxa || true
+check_library threads '' threads/thread.cmi vmthreads/thread.cmi || true
 
 # Need to know if str and labltk are available for the toolbox
 if check_library str 'possible since 4.08' str/str.cmi str.cmi; then
