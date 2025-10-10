@@ -89,11 +89,9 @@ findlib_dynload.cmxa: $(DYNLOAD_XOBJECTS)
 	fi
 
 findlib_config.ml: findlib_config.mlp $(TOP)/Makefile.config
-	USE_CYGPATH="$(USE_CYGPATH)"; \
-	export USE_CYGPATH; \
 	cat findlib_config.mlp | \
-	        $(SH) $(TOP)/tools/patch '@CONFIGFILE@' '$(OCAMLFIND_CONF)' | \
-	        $(SH) $(TOP)/tools/patch '@STDLIB@' '$(OCAML_CORE_STDLIB)' | \
+	        $(SH) $(TOP)/tools/patch '@CONFIGFILE@' '$(OCAMLFIND_CONF_NATIVE)' | \
+	        $(SH) $(TOP)/tools/patch '@STDLIB@' '$(OCAML_CORE_STDLIB_NATIVE)' | \
 	        $(SH) $(TOP)/tools/patch '@RELATIVE_PATHS@' '$(RELATIVE_PATHS)' | \
 		sed -e 's;@AUTOLINK@;$(OCAML_AUTOLINK);g' \
 		    -e 's;@SYSTEM@;$(SYSTEM);g' \
@@ -116,10 +114,8 @@ topfind.compat.in: topfind.in
 	fi
 
 topfind: topfind.compat.in
-	USE_CYGPATH="$(USE_CYGPATH)"; \
-	export USE_CYGPATH; \
 	cat topfind.compat.in | \
-	        $(SH) $(TOP)/tools/patch '@SITELIB@' '$(OCAML_SITELIB)' | \
+	        $(SH) $(TOP)/tools/patch '@SITELIB@' '$(OCAML_SITELIB_NATIVE)' | \
 	        $(SH) $(TOP)/tools/patch '@RELATIVE_PATHS@' '$(RELATIVE_PATHS)' \
 	    	    >topfind
 

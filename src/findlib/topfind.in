@@ -101,7 +101,7 @@ in
 
 let findlib_directory = match @RELATIVE_PATHS@ with
   | true -> location / "lib" / "findlib"
-  | false -> "@SITELIB@/findlib"
+  | false -> "@SITELIB@" / "findlib"
 in
 
 let () = Topdirs.dir_directory findlib_directory in
