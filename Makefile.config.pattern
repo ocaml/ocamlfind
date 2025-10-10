@@ -7,6 +7,7 @@
 # Where the OCAML core is installed:
 #----------------------------------------------------------------------
 OCAML_CORE_STDLIB=/usr/local/lib/ocaml
+OCAML_CORE_STDLIB_NATIVE=$(OCAML_CORE_STDLIB)
 
 #----------------------------------------------------------------------
 # Type of multi-threading support: either vm or posix
@@ -20,11 +21,7 @@ OCAML_THREADS=vm
 # Where the site-lib directory will be
 #----------------------------------------------------------------------
 OCAML_SITELIB=/usr/local/lib/ocaml/site-lib
-
-#----------------------------------------------------------------------
-# What the path setting will be
-#----------------------------------------------------------------------
-FINDLIB_PATH=/usr/local/lib/ocaml/site-lib:/usr/local/lib/ocaml
+OCAML_SITELIB_NATIVE=$(OCAML_SITELIB)
 
 #----------------------------------------------------------------------
 # Where binaries and manual pages will be installed
@@ -36,6 +33,7 @@ OCAMLFIND_MAN=/usr/local/man
 # The absolute location of the configuration file
 #----------------------------------------------------------------------
 OCAMLFIND_CONF=/usr/local/etc/ocamlfind.conf
+OCAMLFIND_CONF_NATIVE=$(OCAMLFIND_CONF)
 
 #----------------------------------------------------------------------
 # Autolinking is usually on
@@ -68,7 +66,6 @@ INSTALL_TOPFIND=1
 # installation
 #----------------------------------------------------------------------
 RELATIVE_PATHS=0
-RELATIVE_OCAML_SITELIB=$$PREFIX/lib
 
 #----------------------------------------------------------------------
 # Whether make install should update Makefile.packages just before
