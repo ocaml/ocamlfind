@@ -69,7 +69,7 @@ get_stdlib () {
     # Older versions of ocamlc do not accept -where, so there is a fallback
     # method:
     ocamlc -where 2>/dev/null | tr -d '\r' || {
-	ocamlc -v | sed -n -e "/Standard library directory/s/.*: \(.*\)/\1/p"; }
+	ocamlc -v | tr -d '\r' | sed -n -e "/Standard library directory/s/.*: \(.*\)/\1/p"; }
 }
 
 
@@ -683,7 +683,7 @@ done
 for lib in $generated_META $lbytes; do
     if=""
     if [ -f site-lib-src/"$lib"/interfaces.out ]; then
-        if=$(cat site-lib-src/"$lib"/interfaces.out)
+        if=$(cat site-lib-src/"$lib"/interfaces.out | tr -d '\r')
     fi
     sed \
         -e "s|%%type_of_threads%%|${ocaml_threads}|g" \
