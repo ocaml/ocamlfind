@@ -105,7 +105,7 @@ get_lib_file () {
 cygpath_to_unix () {
     v=$1
     eval "p=\"\$$v\""
-    p="$(cygpath -w -s "$p")"
+    p="$(cygpath -w "$p")"
     p="$(cygpath -u "$p")"
     eval "$v=\"$p\""
 }
