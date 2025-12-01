@@ -698,6 +698,19 @@ if [ $with_toolbox -gt 0 ]; then
     fi
 fi
 
+parts="findlib"
+ocamlfind_ocamlflags="-I +unix -I +dynlink"
+ocamlfind_archives="findlib.cma unix.cma"
+if [ $with_toolbox -gt 0 ]; then
+    parts="$parts findlib-toolbox"
+fi
+if [ $cbytes -gt 0 ]; then
+    # bytes first, because findlib needs it
+    parts="bytes $parts"
+    ocamlfind_ocamlflags="${ocamlfind_ocamlflags} -I ../bytes"
+    ocamlfind_archives="bytes.cma ${ocamlfind_archives}"
+fi
+
 # Generate the META files now.
 
 for dir in site-lib-src/*; do
@@ -727,12 +740,13 @@ for lib in $generated_META $lbytes; do
     echo "Configuration for $lib written to site-lib-src/$lib/META"
 done
 
-# create META from META.in in POSIX-compatible & safe way
-# see: https://www.shellcheck.net/wiki/SC2044
-meta_subst="sed -e 's/@VERSION@/$version/g' \
-	-e 's/@REQUIRES@/${req_bytes}/g' \
-	\"\$1\" > \"\${1%.in}\""
-find src -name 'META.in' -type f -exec sh -c "$meta_subst" sh {} \;
+for part in $parts; do
+  if [ -f src/"$part"/META.in ]; then
+    sed -e "s/@VERSION@/$version/g" \
+        -e "s/@REQUIRES@/${req_bytes}/g" \
+        src/"$part"/META.in > src/"$part"/META
+  fi
+done
 
 ######################################################################
 
@@ -754,19 +768,6 @@ fi
 
 ######################################################################
 # Write Makefile.config
-
-parts="findlib"
-ocamlfind_ocamlflags="-I +unix -I +dynlink"
-ocamlfind_archives="findlib.cma unix.cma"
-if [ $with_toolbox -gt 0 ]; then
-    parts="$parts findlib-toolbox"
-fi
-if [ $cbytes -gt 0 ]; then
-    # bytes first, because findlib needs it
-    parts="bytes $parts"
-    ocamlfind_ocamlflags="${ocamlfind_ocamlflags} -I ../bytes"
-    ocamlfind_archives="bytes.cma ${ocamlfind_archives}"
-fi
 
 relative_site_lib=$(echo "${ocaml_sitelib}" | sed -e "s#^${ocaml_prefix}#\$PREFIX#")
 
