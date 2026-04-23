@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-    name: ${{ matrix.os }} - OCaml ${{ matrix.ocaml-version }}
+    name: ${{ matrix.os.windows_environment == '' && matrix.os.name || format('windows-latest/{0}', matrix.os.windows_environment) }} - OCaml ${{ matrix.ocaml-version }}
 
     strategy:
       fail-fast: false
@@ -12,17 +12,21 @@ jobs:
       # OCaml versions.
       matrix:
         os:
-          - macos-latest
-          - ubuntu-latest
-          - windows-latest
+          - name: macos-latest
+          - name: ubuntu-latest
+          - name: windows-latest
+            windows_environment: cygwin
+          - name: windows-latest
+            windows_environment: msys2
         ocaml-version:
           - "4.14"
           - "5.4"
         include:
-          - os: ubuntu-latest
+          - os:
+              name: ubuntu-latest
             ocaml-version: "3.08"
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os.name }}
 
     steps:
       - name: Checkout code
@@ -32,6 +36,7 @@ jobs:
         uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: ${{ matrix.ocaml-version }}
+          windows-environment: ${{ matrix.os.windows_environment == '' && 'cygwin' || matrix.os.windows_environment }}
           opam-repositories: |
             default: git+https://github.com/ocaml/opam-repository.git
             archive: git+https://github.com/ocaml/opam-repository-archive.git
