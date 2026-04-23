@@ -1,11 +1,11 @@
 # Default behaviour, for if core.autocrlf isn't set
 * text=auto
- text eol=lf
 /ocaml-stub  text eol=lf
 /release text eol=lf
 /itest text eol=lf
 /configure text eol=lf
 /mini/ocamlfind-mini text eol=lf
+/tools/cmd_in_different_dirs text eol=lf
 /tools/file_exists text eol=lf
 /tools/safe_camlp4 text eol=lf
 /tools/make-package-macosx text eol=lf
