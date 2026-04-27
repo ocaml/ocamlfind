@@ -42,6 +42,12 @@ jobs:
         run: opam pin add ocamlfind .
 
       - name: Test the ocamlfind binary
-        run: opam exec -- ocamlfind list
+        env:
+          OPT: ${{ matrix.ocaml-version == '3.08' && '-version' || '-config' }}
+        run: |
+          opam exec -- ocamlfind list
+          opam exec -- ocamlfind printconf
+          opam exec -- ocamlfind opt ${{ env.OPT }}
+
       - name: Test the toplevel plugin
         run: opam exec -- ocaml .github/workflows/toplist.ml
