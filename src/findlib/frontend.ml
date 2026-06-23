@@ -226,23 +226,30 @@ let use_package prefix pkgnames =
 ;;
 
 
-let read_ldconf filename =
+let read_ldconf ldconf_filename =
   let lines = ref [] in
-  let f = open_in filename in
+  let f = open_in ldconf_filename in
   try
     while true do
       let line = input_line f in
       if line <> "" then
-	lines := line :: !lines
+        lines := line :: !lines
     done;
     assert false
   with
-      End_of_file ->
-	close_in f;
-	List.rev !lines
-    | other ->
-	close_in f;
-	raise other
+  | End_of_file ->
+      close_in f;
+      let make_absolute path =
+        if Filename.is_relative path then
+          let dir = Filename.dirname ldconf_filename in
+          Filename.concat dir path
+        else
+          path
+      in
+      List.rev_map make_absolute !lines
+  | other ->
+      close_in f;
+      raise other
 ;;
 
 
