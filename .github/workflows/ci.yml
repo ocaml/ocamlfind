@@ -26,21 +26,28 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set-up OCaml ${{ matrix.ocaml-version }}
         uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: ${{ matrix.ocaml-version }}
 
-      # Check building with make
-      - run: |
+      - name: Build with make
+        run: |
           opam exec -- ${{ runner.os == 'Windows' && 'sh ' || '' }}./configure
           opam exec -- make all opt
 
-      # Check installing with opam
-      - run: opam pin add ocamlfind .
+      - name: Build and install with opam
+        run: opam pin add ocamlfind .
 
-      # Test it
-      - run: opam exec -- ocamlfind list
-      - run: opam exec -- ocaml .github/workflows/toplist.ml
+      - name: Test the ocamlfind binary
+        env:
+          OPT: ${{ matrix.ocaml-version == '3.08' && '-version' || '-config' }}
+        run: |
+          opam exec -- ocamlfind list
+          opam exec -- ocamlfind printconf
+          opam exec -- ocamlfind opt ${{ env.OPT }}
+
+      - name: Test the toplevel plugin
+        run: opam exec -- ocaml .github/workflows/toplist.ml
