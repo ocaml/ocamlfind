@@ -922,7 +922,7 @@ let ocamlc which () =
 
   let type_of_threads =
     try package_property [] "threads" "type_of_threads"
-    with Not_found -> "ignore"
+    with No_such_package _ -> "ignore"
   in
   let threads_default =
     match type_of_threads with
