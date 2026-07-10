@@ -137,12 +137,12 @@ install: all
 	test $(INSTALL_TOPFIND) -eq 0 || $(INSTALLDIR) "$(DESTDIR)$(prefix)$(OCAML_CORE_STDLIB)"
 	test $(INSTALL_TOPFIND) -eq 0 || $(CP) topfind "$(DESTDIR)$(prefix)$(OCAML_CORE_STDLIB)/"
 	files=`$(SH) $(TOP)/tools/collect_files $(TOP)/Makefile.config \
-	findlib.cmi findlib.mli findlib.cma findlib.cmxa findlib$(LIB_SUFFIX) findlib.cmxs \
-	findlib_config.cmi findlib_config.ml topfind.cmi topfind.mli \
-	fl_args.cmi fl_lint.cmi fl_meta.cmi fl_split.cmi fl_topo.cmi ocaml_args.cmi \
-	fl_package_base.mli fl_package_base.cmi fl_metascanner.mli fl_metascanner.cmi \
-	fl_metatoken.cmi findlib_top.cma findlib_top.cmxa findlib_top$(LIB_SUFFIX) findlib_top.cmxs \
-	findlib_dynload.cma findlib_dynload.cmxa findlib_dynload$(LIB_SUFFIX) findlib_dynload.cmxs fl_dynload.mli fl_dynload.cmi \
+	findlib.cmi findlib.cmx findlib.mli findlib.cma findlib.cmxa findlib$(LIB_SUFFIX) findlib.cmxs \
+	findlib_config.cmi findlib_config.cmx findlib_config.ml topfind.cmi topfind.cmx topfind.mli \
+	fl_args.cmi fl_args.cmx fl_lint.cmi fl_lint.cmx fl_meta.cmi fl_meta.cmx fl_split.cmi fl_split.cmx fl_topo.cmi fl_topo.cmx ocaml_args.cmi ocaml_args.cmx \
+	fl_package_base.mli fl_package_base.cmi fl_package_base.cmx fl_metascanner.mli fl_metascanner.cmi fl_metascanner.cmx \
+	fl_metatoken.cmi fl_metatoken.cmx findlib_top.cma findlib_top.cmxa findlib_top$(LIB_SUFFIX) findlib_top.cmxs \
+	findlib_dynload.cma findlib_dynload.cmxa findlib_dynload$(LIB_SUFFIX) findlib_dynload.cmxs fl_dynload.mli fl_dynload.cmi fl_dynload.cmx \
 	META` && \
 	$(CP) $$files "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/$(NAME)/"
 	f="ocamlfind$(EXEC_SUFFIX)"; { test -f ocamlfind_opt$(EXEC_SUFFIX) && f="ocamlfind_opt$(EXEC_SUFFIX)"; }; \
@@ -150,12 +150,12 @@ install: all
 	# the following "if" block is only needed for 4.00beta2
 	if [ $(OCAML_REMOVE_DIRECTORY) -eq 0 -a -f "$(OCAML_CORE_STDLIB)/compiler-libs/topdirs.cmi" ]; then \
 	    cd "$(OCAML_CORE_STDLIB)/compiler-libs/"; \
-	    $(CP) topdirs.cmi toploop.cmi "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/$(NAME)/"; \
+	    $(CP) topdirs.cmi topdirs.cmx toploop.cmi toploop.cmx "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/$(NAME)/"; \
 	fi
 
 install-num-top:
 	$(INSTALLDIR) "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/num-top"
-	$(CP) num_top.cma num_top.cmi num_top_printers.cmi \
+	$(CP) num_top.cma num_top.cmi num_top.cmx num_top_printers.cmi num_top_printers.cmx \
 		"$(DESTDIR)$(prefix)$(OCAML_SITELIB)/num-top/"
 
 # Note: uninstall-num-top is part of the removal of the META files.
