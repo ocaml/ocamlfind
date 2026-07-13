@@ -32,6 +32,9 @@ jobs:
         uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: ${{ matrix.ocaml-version }}
+          opam-repositories: |
+            default: git+https://github.com/ocaml/opam-repository.git
+            archive: git+https://github.com/ocaml/opam-repository-archive.git
 
       - name: Build with make
         run: |
