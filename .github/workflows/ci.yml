@@ -21,6 +21,7 @@ jobs:
         ocaml-version:
           - "4.14"
           - "5.4"
+          - "5.5"
         include:
           - os:
               name: ubuntu-latest
@@ -44,6 +45,9 @@ jobs:
       - name: Build with make
         run: |
           opam exec -- ${{ runner.os == 'Windows' && 'sh ' || '' }}./configure
+          echo ------------
+          grep "[\\\\/]" Makefile.config
+          echo ------------
           opam exec -- make all opt
 
       - name: Build and install with opam
@@ -54,8 +58,12 @@ jobs:
           OPT: ${{ matrix.ocaml-version == '3.08' && '-version' || '-config' }}
         run: |
           opam exec -- ocamlfind list
+          echo ------------
           opam exec -- ocamlfind printconf
+          echo ------------
           opam exec -- ocamlfind opt ${{ env.OPT }}
+          echo ------------
+          opam exec -- ocamlfind printconf conf | tr -d '\r' | tr '\\' '/' | xargs cat
 
       - name: Test the toplevel plugin
         run: opam exec -- ocaml .github/workflows/toplist.ml
