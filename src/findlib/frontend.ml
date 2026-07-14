@@ -226,26 +226,6 @@ let use_package prefix pkgnames =
 ;;
 
 
-let read_ldconf filename =
-  let lines = ref [] in
-  let f = open_in filename in
-  try
-    while true do
-      let line = input_line f in
-      if line <> "" then
-	lines := line :: !lines
-    done;
-    assert false
-  with
-      End_of_file ->
-	close_in f;
-	List.rev !lines
-    | other ->
-	close_in f;
-	raise other
-;;
-
-
 let write_ldconf filename lines new_lines =
   let f = open_out filename in
   try

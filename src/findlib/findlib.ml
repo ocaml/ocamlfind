@@ -551,3 +551,20 @@ let record_package_predicates preds =
 let recorded_predicates() =
   !rec_preds
 
+let read_ldconf filename =
+  let lines = ref [] in
+  let f = open_in filename in
+  try
+    while true do
+      let line = input_line f in
+      if line <> "" then
+	lines := line :: !lines
+    done;
+    assert false
+  with
+      End_of_file ->
+	close_in f;
+	List.rev !lines
+    | other ->
+	close_in f;
+	raise other
