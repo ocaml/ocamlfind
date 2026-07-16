@@ -210,7 +210,6 @@ lib_suffix=$(ocamlc -config 2>/dev/null | tr -d '\r' | sed -n -e 's/^ext_lib: //
 # Check for Cygwin:
 
 exec_suffix=
-pure_mingw="no"
 case $(uname) in
   CYGWIN*)
     exec_suffix=.exe
@@ -222,7 +221,6 @@ case $(uname) in
     ;;
   MINGW*)
     exec_suffix=.exe
-    pure_mingw="yes"
     echo "MinGW build environment found; using .exe as suffix for binaries"
     ;;
   *)
@@ -249,14 +247,7 @@ fi
 path_sep=':'
 dir_sep='/'
 case "$system" in
-    mingw|mingw64)
-	if [ "$pure_mingw" = "no" ];  then
-	    # CYGWIN
-	    use_cygpath=1
-	fi
-	path_sep=';'
-	dir_sep="\\";;
-    win32|win64)
+    mingw|mingw64|win32|win64)
 	use_cygpath=1
 	path_sep=';'
 	dir_sep="\\";;
@@ -643,9 +634,6 @@ else
         if [ ${use_cygpath} -gt 0 ]; then
             camlp4_dir=$(cygpath -w "$camlp4_dir" | sed -e 's;\\;\\\\;g')
             # This makes camlp4_dir a windows path
-        elif [ "${pure_mingw}" = "yes" ]; then
-            # Must double the backslahes
-            camlp4_dir="$(echo "${camlp4_dir}" | sed -e 's;\\;\\\\;g')"
         fi
         camlp4_version=$(camlp4 -v 2>&1)
         if [ "$have_dlls" = "yes" ]; then
