@@ -211,7 +211,6 @@ lib_suffix=$(ocamlc -config 2>/dev/null | tr -d '\r' | sed -n -e 's/^ext_lib: //
 
 exec_suffix=
 pure_mingw="no"
-mingw_lib=
 case $(uname) in
   CYGWIN*)
     exec_suffix=.exe
@@ -225,8 +224,6 @@ case $(uname) in
     exec_suffix=.exe
     pure_mingw="yes"
     echo "MinGW build environment found; using .exe as suffix for binaries"
-    mingw_lib=$(get_path gcc)
-    mingw_lib=$(dirname "$mingw_lib")/../lib
     ;;
   *)
     true ;;
@@ -806,10 +803,6 @@ fi
     echo "SYSTEM=${system}"
     echo "NUMTOP=${numtop}"
     echo "SH=${sh}"
-    if [ "$mingw_lib" != "" ]; then
-        echo "OCAMLC_FLAGS=-I \"${mingw_lib}\""
-        echo "OCAMLOPT_FLAGS=-I \"${mingw_lib}\""
-    fi
     echo "OPAQUE=${opaque}"
     echo "OCAMLOPT_G=${native_debugging_info}"
     echo "CHECK_BEFORE_INSTALL=${check_before_install}"
