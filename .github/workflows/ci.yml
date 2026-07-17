@@ -37,6 +37,7 @@ jobs:
         uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: ${{ matrix.ocaml-version }}
+          opam-disable-sandboxing: ${{ runner.os == 'macOS' && 'true' || 'false' }}
           windows-environment: ${{ matrix.os.windows_environment == '' && 'cygwin' || matrix.os.windows_environment }}
           opam-repositories: |
             default: git+https://github.com/ocaml/opam-repository.git
