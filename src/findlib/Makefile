@@ -155,7 +155,7 @@ install: all
 
 install-num-top:
 	$(INSTALLDIR) "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/num-top"
-	$(CP) num_top.cma num_top.cmi num_top.cmx num_top_printers.cmi num_top_printers.cmx \
+	$(CP) num_top.cma num_top.cmi num_top_printers.cmi \
 		"$(DESTDIR)$(prefix)$(OCAML_SITELIB)/num-top/"
 
 # Note: uninstall-num-top is part of the removal of the META files.
