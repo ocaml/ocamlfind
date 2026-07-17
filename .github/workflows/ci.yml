@@ -51,7 +51,13 @@ jobs:
           opam exec -- make all opt
 
       - name: Build and install with opam
-        run: opam pin add ocamlfind .
+        id: opam
+        env:
+          SOURCE_DATE_EPOCH: 0
+          OCAMLPARAM: ${{ runner.os == 'macOS' && '|_|cclib=-Wl,-S' || '' }}
+        run: |
+          opam pin add ocamlfind .
+          sh -c 'echo "relocatable=$(test -n "$(opam list --installed --short compiler-cloning.enabled)" && echo "true" || echo "false")" >> "$GITHUB_OUTPUT"'
 
       - name: Test the ocamlfind binary
         env:
@@ -67,3 +73,29 @@ jobs:
 
       - name: Test the toplevel plugin
         run: opam exec -- ocaml .github/workflows/toplist.ml
+
+      - name: Create second switch (relocatable)
+        if: steps.opam.outputs.relocatable == 'true'
+        shell: bash
+        env:
+          SOURCE_DATE_EPOCH: 0
+          OCAMLPARAM: ${{ runner.os == 'macOS' && '|_|cclib=-Wl,-S' || '' }}
+        run: |
+          opam switch create second --no-switch $(opam list --color=never --columns=package --short --installed ocaml | tr -d '\r')
+          opam pin add --switch=second ocamlfind .
+
+      - name: Check ocamlfind is relocatable
+        if: steps.opam.outputs.relocatable == 'true'
+        shell: bash
+        run: |
+          first="$(opam var bin | tr -d '\r')/ocamlfind${{ runner.os == 'Windows' && '.exe' || '' }}"
+          second="$(opam var --switch=second bin | tr -d '\r')/ocamlfind${{ runner.os == 'Windows' && '.exe' || '' }}"
+          sha1sum "$first" "$second"
+          if ! cmp -s "$first" "$second"; then
+            if command -v xxd > /dev/null; then
+              diff <(xxd "$first") <(xxd "$second") || true
+            else
+              diff <(od -A x -t x1 -v "$first") <(od -A x -t x1 -v "$second") || true
+            fi
+            exit 1
+          fi

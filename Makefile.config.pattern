@@ -4,6 +4,11 @@
 # configuration, especially the site-lib/*/META files.
 # 
 #----------------------------------------------------------------------
+# Where is findlib being compiled:
+#----------------------------------------------------------------------
+SRCDIR_ABS=/home/user/ocamlfind
+
+#----------------------------------------------------------------------
 # Where the OCAML core is installed:
 #----------------------------------------------------------------------
 OCAML_CORE_STDLIB=/usr/local/lib/ocaml

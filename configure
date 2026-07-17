@@ -853,8 +853,14 @@ else
     relative_paths="false"
 fi
 
+srcdir_abs="$PWD"
+if [ ${use_cygpath} -gt 0 ]; then
+    srcdir_abs="$(LC_ALL=C.UTF-8 cygpath -w -- "$srcdir_abs")"
+fi
+
 {
     echo "# Makefile.config written by configure"
+    echo "SRCDIR_ABS=${srcdir_abs}"
     echo "OCAML_CORE_STDLIB=${ocaml_core_stdlib}"
     echo "OCAML_CORE_STDLIB_NATIVE=${ocaml_core_stdlib_native}"
     echo "OCAML_SITELIB=${ocaml_sitelib}"
