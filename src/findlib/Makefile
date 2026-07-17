@@ -150,7 +150,7 @@ install: all
 	# the following "if" block is only needed for 4.00beta2
 	if [ $(OCAML_REMOVE_DIRECTORY) -eq 0 -a -f "$(OCAML_CORE_STDLIB)/compiler-libs/topdirs.cmi" ]; then \
 	    cd "$(OCAML_CORE_STDLIB)/compiler-libs/"; \
-	    $(CP) topdirs.cmi topdirs.cmx toploop.cmi toploop.cmx "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/$(NAME)/"; \
+	    $(CP) topdirs.cmi toploop.cmi "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/$(NAME)/"; \
 	fi
 
 install-num-top:
