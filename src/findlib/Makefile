@@ -22,9 +22,9 @@ OCAMLLEX = ocamllex
 #CAMLP4O =  camlp4 pa_o.cmo pa_op.cmo pr_dump.cmo --
 
 
-OBJECTS        = fl_compat.cmo fl_split.cmo findlib_config.cmo \
-		 fl_metatoken.cmo fl_meta.cmo fl_metascanner.cmo fl_topo.cmo \
-		 fl_package_base.cmo findlib.cmo fl_args.cmo fl_lint.cmo
+OBJECTS        = findlib_config.cmo fl_split.cmo fl_metatoken.cmo fl_meta.cmo \
+		 fl_metascanner.cmo fl_topo.cmo fl_package_base.cmo \
+	         findlib.cmo fl_args.cmo fl_lint.cmo
 TOBJECTS       = topfind.cmo
 
 XOBJECTS       = $(OBJECTS:.cmo=.cmx)
@@ -101,7 +101,6 @@ findlib_config.ml: findlib_config_$(IS_RELOCATABLE).mlp $(TOP)/Makefile.config
 	        $(SH) $(TOP)/tools/patch '@CONFIGFILE@' '$(OCAMLFIND_CONF_NATIVE)' | \
 	        $(SH) $(TOP)/tools/patch '@CONFIGFILENAME@' '$(OCAMLFIND_CONF_NAME)' | \
 	        $(SH) $(TOP)/tools/patch '@STDLIB@' '$(OCAML_CORE_STDLIB_NATIVE)' | \
-	        $(SH) $(TOP)/tools/patch '@RELATIVE_PATHS@' '$(RELATIVE_PATHS)' | \
 		sed -e 's;@AUTOLINK@;$(OCAML_AUTOLINK);g' \
 		    -e 's;@SYSTEM@;$(SYSTEM);g' \
 	      -e 's;@CONFIG_FROM_STDLIB@;$(CONFIG_FROM_STDLIB);g' \
@@ -129,8 +128,7 @@ topfind_11.p: topfind.in
 
 topfind: topfind_$(OCAML_REMOVE_DIRECTORY)$(IS_RELOCATABLE).p $(TOP)/Makefile.config
 	cat $< | \
-	        $(SH) $(TOP)/tools/patch '@SITELIB@' '$(OCAML_SITELIB_FROM_STDLIB)' | \
-	        $(SH) $(TOP)/tools/patch '@RELATIVE_PATHS@' '$(RELATIVE_PATHS)' \
+	        $(SH) $(TOP)/tools/patch '@SITELIB@' '$(OCAML_SITELIB_FROM_STDLIB)' \
 	    	    >topfind
 
 num_top.cma: $(NUMTOP_OBJECTS)
