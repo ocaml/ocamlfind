@@ -19,6 +19,7 @@ src/findlib/findlib_config.ml
 src/findlib/fl_meta.ml
 src/findlib/ocaml_args.ml
 src/findlib/ocamlfind
+src/findlib/ocamlfind_opt
 src/findlib/topfind
 src/findlib/topfind.ml
 src/findlib/topfind.compat.in

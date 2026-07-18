@@ -137,12 +137,12 @@ install: all
 	test $(INSTALL_TOPFIND) -eq 0 || $(INSTALLDIR) "$(DESTDIR)$(prefix)$(OCAML_CORE_STDLIB)"
 	test $(INSTALL_TOPFIND) -eq 0 || $(CP) topfind "$(DESTDIR)$(prefix)$(OCAML_CORE_STDLIB)/"
 	files=`$(SH) $(TOP)/tools/collect_files $(TOP)/Makefile.config \
-	findlib.cmi findlib.mli findlib.cma findlib.cmxa findlib$(LIB_SUFFIX) findlib.cmxs \
-	findlib_config.cmi findlib_config.ml topfind.cmi topfind.mli \
-	fl_args.cmi fl_lint.cmi fl_meta.cmi fl_split.cmi fl_topo.cmi ocaml_args.cmi \
-	fl_package_base.mli fl_package_base.cmi fl_metascanner.mli fl_metascanner.cmi \
-	fl_metatoken.cmi findlib_top.cma findlib_top.cmxa findlib_top$(LIB_SUFFIX) findlib_top.cmxs \
-	findlib_dynload.cma findlib_dynload.cmxa findlib_dynload$(LIB_SUFFIX) findlib_dynload.cmxs fl_dynload.mli fl_dynload.cmi \
+	findlib.cmi findlib.cmx findlib.mli findlib.cma findlib.cmxa findlib$(LIB_SUFFIX) findlib.cmxs \
+	findlib_config.cmi findlib_config.cmx findlib_config.ml topfind.cmi topfind.cmx topfind.mli \
+	fl_args.cmi fl_args.cmx fl_lint.cmi fl_lint.cmx fl_meta.cmi fl_meta.cmx fl_split.cmi fl_split.cmx fl_topo.cmi fl_topo.cmx \
+	fl_package_base.mli fl_package_base.cmi fl_package_base.cmx fl_metascanner.mli fl_metascanner.cmi fl_metascanner.cmx \
+	fl_metatoken.cmi fl_metatoken.cmx findlib_top.cma findlib_top.cmxa findlib_top$(LIB_SUFFIX) findlib_top.cmxs \
+	findlib_dynload.cma findlib_dynload.cmxa findlib_dynload$(LIB_SUFFIX) findlib_dynload.cmxs fl_dynload.mli fl_dynload.cmi fl_dynload.cmx \
 	META` && \
 	$(CP) $$files "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/$(NAME)/"
 	f="ocamlfind$(EXEC_SUFFIX)"; { test -f ocamlfind_opt$(EXEC_SUFFIX) && f="ocamlfind_opt$(EXEC_SUFFIX)"; }; \
