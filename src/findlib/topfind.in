@@ -3,9 +3,9 @@
 (* For Ocaml-3.03 and up, so you can do: #use "topfind" and get a
  * working findlib toploop.
  *)
-
-(* To access Toploop in OCaml >= 4.00. This directory will be later removed from path if possible *)
-#directory "+compiler-libs";;
+4x:
+4x:(* To access Toploop in OCaml >= 4.00. This directory will be later removed from path if possible *)
+4x:#directory "+compiler-libs";;
 
 let exists path =
   match Sys.file_exists path with
@@ -89,6 +89,14 @@ let rec try_vars = function
       | Some _ as found -> found))
 in
 
+let sitelib_directory = "@SITELIB@" in
+rx:let module Defs = struct
+rx:  external standard_library_default : unit -> string = "%standard_library_default"
+rx:  external stdlib_dirs : string -> string * string option = "caml_sys_get_stdlib_dirs"
+rx:end in
+rx:let stdlib, _ = Defs.stdlib_dirs (Defs.standard_library_default ()) in
+rx:let sitelib_directory = Filename.concat stdlib sitelib_directory in
+
 let location =
   match try_vars [
     ("OPAM_SWITCH_PREFIX", install_dir_from_opam_switch_prefix);
@@ -96,12 +104,12 @@ let location =
     ("OCAML_TOPLEVEL_PATH", install_dir_from_ocaml_toplevel_path);
   ] with
   | Some location -> location
-  | None -> "@SITELIB@"
+  | None -> sitelib_directory
 in
 
 let findlib_directory = match @RELATIVE_PATHS@ with
   | true -> location / "lib" / "findlib"
-  | false -> "@SITELIB@" / "findlib"
+  | false -> sitelib_directory / "findlib"
 in
 
 let () = Topdirs.dir_directory findlib_directory in
@@ -131,11 +139,9 @@ if not (exec_test "Topfind.reset;;") then (
   Topdirs.dir_load Format.err_formatter (findlib_directory / ("findlib_top." ^ suffix)))
 ;;
 (* phrase has to end here otherwise Topfind is not accessible *)
-
-(* REMOVE_DIRECTORY_BEGIN *)
-(* OCaml < 4.00 do not have this so only include this code if it was detected *)
-let () = Topdirs.dir_remove_directory "+compiler-libs" in
-(* REMOVE_DIRECTORY_END *)
+4x:
+4x:(* OCaml < 4.00 do not have this so only include this code if it was detected *)
+4x:let () = Topdirs.dir_remove_directory "+compiler-libs" in
 
 (* The following is always executed. It is harmless if findlib was already
  * initialized

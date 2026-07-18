@@ -238,7 +238,13 @@ val list_packages' : ?prefix:string -> unit -> string list
    * @param prefix Limit to the packages that starts with it. Default: unlimited
    *)
 
-val read_ldconf : string -> string list
+(** Entries in ld.conf *)
+type ldconf_entry = {
+  raw: string; (** Raw entry line *)
+  eff: string  (** Evaluated entry line *)
+}
+
+val read_ldconf : string -> ldconf_entry list
   (** Reads and evaluates lines from the supplied ld.conf file. *)
 
 (** Managing dynamically loaded packages *)
