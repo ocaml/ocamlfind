@@ -1,7 +1,7 @@
 #! /bin/sh
 
-# Check whether ocamlc and ocamlc.opt are installed in the same
-# directory (or whatever command names are passed as $1).
+# Check whether ocamlc and ocamlc.opt are installed in different
+# directories (or whatever command names are passed as $1).
 
 get_path () {
     IFS=":"
@@ -27,4 +27,4 @@ get_path () {
 p1="$(get_path "$1").opt"
 p2="$(get_path "$1.opt")"
 
-[ "X$p1" = "X$p2" ]
+[ "X$p1" != "X$p2" ]

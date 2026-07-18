@@ -238,6 +238,9 @@ val list_packages' : ?prefix:string -> unit -> string list
    * @param prefix Limit to the packages that starts with it. Default: unlimited
    *)
 
+val read_ldconf : string -> string list
+  (** Reads and evaluates lines from the supplied ld.conf file. *)
+
 (** Managing dynamically loaded packages *)
 
 (** This is a registry of packages that are available in-core. This is both

@@ -8,10 +8,12 @@
 *.cmxs
 *.a
 *.so
+*.exe
 META
 
 Makefile.config
 Makefile.packages
+findlib.conf.in
 findlib.conf
 ocargs.log
 src/findlib/depend

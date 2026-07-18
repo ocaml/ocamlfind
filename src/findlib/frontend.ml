@@ -226,26 +226,6 @@ let use_package prefix pkgnames =
 ;;
 
 
-let read_ldconf filename =
-  let lines = ref [] in
-  let f = open_in filename in
-  try
-    while true do
-      let line = input_line f in
-      if line <> "" then
-	lines := line :: !lines
-    done;
-    assert false
-  with
-      End_of_file ->
-	close_in f;
-	List.rev !lines
-    | other ->
-	close_in f;
-	raise other
-;;
-
-
 let write_ldconf filename lines new_lines =
   let f = open_out filename in
   try
@@ -2138,7 +2118,7 @@ let install_package () =
 	  if !add_files then (
 	    let m1 = Filename.concat !metadir meta_dot_pkg in
 	    let m2 = Filename.concat pkgdir "META" in
-	    if Sys.file_exists m1 then
+            if has_metadir && Sys.file_exists m1 then
 	      m1
 	    else
 	      if Sys.file_exists m2 then
@@ -2153,7 +2133,7 @@ let install_package () =
 
   if not !add_files then (
     (* Check for frequent reasons why installation can go wrong *)
-    if Sys.file_exists (Filename.concat !metadir meta_dot_pkg) then
+    if has_metadir && Sys.file_exists (Filename.concat !metadir meta_dot_pkg) then
       failwith ("Package " ^ !pkgname ^ " is already installed\n - (file " ^ Filename.concat !metadir meta_dot_pkg ^ " already exists)");
 
     if Sys.file_exists (Filename.concat pkgdir "META") then
