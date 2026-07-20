@@ -305,7 +305,7 @@ if [ "$ocaml_major" -ge 5 ]; then
     # nothing to do, but otherwise we need to put OCaml's Standard Library
     # into the path setting.
     if [ ! -e "${ocaml_sitelib}/stdlib.cmi" ]; then
-        ocamlpath="${ocaml_core_stdlib}${path_sep}${ocamlpath}"
+        ocamlpath="${ocamlpath}${path_sep}${ocaml_core_stdlib}"
     fi
 fi
 
